@@ -1,0 +1,16 @@
+{
+  "$schema": "https://skills.sh/schemas/skills.sh.schema.json",
+  "notGrouped": "bottom",
+  "groupings": [
+    {
+      "title": "Terminal",
+      "description": "Skills for terminal multiplexers and multi-agent workflows.",
+      "skills": ["herdr"]
+    },
+    {
+      "title": "Windows",
+      "description": "Skills for Windows development machines.",
+      "skills": ["windows-dev-disk-cleanup"]
+    }
+  ]
+}

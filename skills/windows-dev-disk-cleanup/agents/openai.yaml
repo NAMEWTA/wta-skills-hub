@@ -1,0 +1,4 @@
+interface:
+  display_name: "Windows 开发机磁盘清理"
+  short_description: "审计、规划并安全执行 Windows 开发机磁盘瘦身清理"
+  default_prompt: "使用 $windows-dev-disk-cleanup 审计 Windows 开发机磁盘占用，持续记录清理决策，并在明确授权后安全执行。"
