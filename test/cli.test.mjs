@@ -8,7 +8,9 @@ import { parseArgs, usage } from "../lib/parse-args.mjs";
 import {
   buildSkillsAddArgv,
   npxCommand,
+  runSkillsCli,
   skillsCliSpec,
+  winQuote,
 } from "../lib/run-skills-cli.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -136,6 +138,42 @@ describe("skillsCliSpec / npxCommand", () => {
     assert.equal(npxCommand("win32"), "npx.cmd");
     assert.equal(npxCommand("linux"), "npx");
   });
+
+  it("quotes Windows command strings", () => {
+    assert.equal(winQuote("skills@1.5.26"), "skills@1.5.26");
+    assert.equal(winQuote("C:\\Program Files\\x"), '"C:\\Program Files\\x"');
+    assert.equal(winQuote('say "hi"'), '"say ""hi"""');
+  });
+
+  it("spawns a quoted shell command on Windows", () => {
+    let captured;
+    runSkillsCli(["--yes", "skills", "add", "C:\\Program Files\\pkg", "-g"], {
+      platform: "win32",
+      spawn: (cmd, opts) => {
+        captured = { cmd, opts };
+        return { status: 0 };
+      },
+    });
+    assert.equal(
+      captured.cmd,
+      'npx.cmd --yes skills add "C:\\Program Files\\pkg" -g'
+    );
+    assert.equal(captured.opts.shell, true);
+  });
+
+  it("spawns without shell on POSIX", () => {
+    let captured;
+    runSkillsCli(["--yes", "skills", "add", "/pkg", "-g"], {
+      platform: "linux",
+      spawn: (cmd, argv, opts) => {
+        captured = { cmd, argv, opts };
+        return { status: 0 };
+      },
+    });
+    assert.equal(captured.cmd, "npx");
+    assert.deepEqual(captured.argv, ["--yes", "skills", "add", "/pkg", "-g"]);
+    assert.equal(captured.opts.shell, undefined);
+  });
 });
 
 describe("discoverSkills", () => {
@@ -165,7 +203,7 @@ describe("CLI", () => {
       encoding: "utf8",
     });
     assert.equal(result.status, 0);
-    assert.match(result.stdout, /wta-skills-hub 1\.0\.0/);
+    assert.match(result.stdout, /wta-skills-hub 1\.0\.1/);
     assert.match(result.stdout, /herdr/);
     assert.match(result.stdout, /windows-dev-disk-cleanup/);
   });
