@@ -1,0 +1,48 @@
+{
+  "name": "wta-skills-hub",
+  "version": "1.0.0",
+  "description": "Install WTA agent skills into Grok, Cursor, Codex, Claude Code, Pi, and other Agent Skills-compatible tools.",
+  "type": "module",
+  "bin": {
+    "wta-skills-hub": "./bin/wta-skills-hub.mjs"
+  },
+  "files": [
+    "bin",
+    "lib",
+    "skills",
+    "skills.sh.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node --test test/cli.test.mjs",
+    "validate": "node scripts/validate-skills.mjs",
+    "prepublishOnly": "node scripts/validate-skills.mjs && node --test test/cli.test.mjs"
+  },
+  "skillsCli": "skills@1.5.26",
+  "engines": {
+    "node": ">=18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NAMEWTA/wta-skills-hub.git"
+  },
+  "homepage": "https://github.com/NAMEWTA/wta-skills-hub#readme",
+  "bugs": {
+    "url": "https://github.com/NAMEWTA/wta-skills-hub/issues"
+  },
+  "keywords": [
+    "skills",
+    "agent-skills",
+    "grok",
+    "cursor",
+    "claude-code",
+    "codex",
+    "npx"
+  ],
+  "author": "Ting'an Wang",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  }
+}

@@ -2,30 +2,43 @@
 
 给 Grok、Cursor、Codex、Claude Code、Pi 等编程智能体用的 Skills 仓库。每个 skill 是一份带 YAML 头的 `SKILL.md`，智能体按需加载，用来固定本团队的操作约定。
 
-当前布局符合 [skills.sh](https://skills.sh) / `npx skills add` 的发现规则：每个 skill 在 `skills/<name>/SKILL.md`。不需要做成可执行 npm 包；官方安装器是 [vercel-labs/skills](https://github.com/vercel-labs/skills)。
+布局符合 [skills.sh](https://skills.sh) / Agent Skills 发现规则：每个 skill 在 `skills/<name>/SKILL.md`。npm 包 `wta-skills-hub` 把这些文件带上，并用官方安装器 [vercel-labs/skills](https://github.com/vercel-labs/skills) 写进各 agent 的全局配置目录。Windows、macOS、Linux 均可。
 
-发布到 GitHub 之后，可用：
+## 安装
+
+默认写入本机已装智能体的**用户级** skills 目录。运行时会列出本包装好的 skill，并让你选择装到哪些 agent。
 
 ```bash
-# 全局安装全部技能，覆盖本机已装的智能体
-npx skills add NAMEWTA/wta-skills-hub -g
+# 交互选择 skill 和 agent，安装到全局
+npx wta-skills-hub
 
 # 指定技能
-npx skills add NAMEWTA/wta-skills-hub --skill herdr -g
-npx skills add NAMEWTA/wta-skills-hub --skill windows-dev-disk-cleanup -g
+npx wta-skills-hub --skill herdr
+npx wta-skills-hub --skill windows-dev-disk-cleanup -a grok
 
-# 指定智能体（可重复 -a；`*` 表示全部）
-npx skills add NAMEWTA/wta-skills-hub --skill herdr -g -a grok -a cursor -a codex
-npx skills add NAMEWTA/wta-skills-hub -g --agent '*' --skill '*'
+# 指定智能体（可重复 -a；逗号分隔也可以；`*` 表示全部）
+npx wta-skills-hub --skill herdr -a grok -a cursor -a codex
+npx wta-skills-hub herdr --agent '*'
 
-# 跳过确认、装到每个受支持智能体
-npx skills add NAMEWTA/wta-skills-hub --all
+# 全部技能 → 本机检测到的全部智能体，跳过确认
+npx wta-skills-hub --all
+
+# 只看包装里有哪些 skill
+npx wta-skills-hub --list
 ```
 
-只装当前项目、不装全局时去掉 `-g`。发布前也可以从本仓库本地路径安装：
+只装当前项目、不装全局时加 `--project`：
 
 ```bash
-npx skills add ./ --skill herdr -g -a grok
+npx wta-skills-hub --skill herdr --project -a grok
+```
+
+也可以不经过本包 CLI，直接用官方安装器从 GitHub 装（同样默认建议加 `-g`）：
+
+```bash
+npx skills add NAMEWTA/wta-skills-hub -g
+npx skills add NAMEWTA/wta-skills-hub --skill herdr -g -a grok
+npx skills add NAMEWTA/wta-skills-hub --all
 ```
 
 GitHub CLI 用户（优先最新 tagged release，其次默认分支 HEAD）：
@@ -36,6 +49,19 @@ gh skill install NAMEWTA/wta-skills-hub herdr
 ```
 
 ## 选项
+
+`npx wta-skills-hub`：
+
+| 选项 | 作用 |
+|---|---|
+| `--skill` / `-s` | 技能名，可多次传入；位置参数也当作技能名 |
+| `--agent` / `-a` | 目标智能体 id，可多次传入；`*` 表示全部 |
+| `--all` | 等价于 `--skill '*' --agent '*' -y`，且默认全局 |
+| `--project` | 写入当前项目，而不是用户级全局目录 |
+| `--yes` / `-y` | 跳过确认 |
+| `--list` / `-l` | 列出包装内技能后退出 |
+
+`npx skills add NAMEWTA/wta-skills-hub` 仍使用官方 CLI 选项：
 
 | 选项 | 作用 |
 |---|---|
@@ -101,10 +127,14 @@ Windows 开发机磁盘瘦身。智能体先只读盘点，把候选写进工作
 
 ```text
 wta-skills-hub/
+  package.json
   README.md
   LICENSE
   skills.sh.json
+  bin/wta-skills-hub.mjs
+  lib/
   scripts/validate-skills.mjs
+  test/cli.test.mjs
   .github/workflows/
     validate-skills.yml
     release.yml
@@ -121,9 +151,14 @@ wta-skills-hub/
 
 ```bash
 node scripts/validate-skills.mjs
+npm test
 ```
 
 `skills.sh.json` 只影响 [skills.sh](https://skills.sh) 仓库页的分组展示，不改变 CLI 安装行为。
+
+## 发布
+
+打 `vX.Y.Z` 标签会触发 GitHub Release；若仓库配置了 `NPM_TOKEN` secret，同一 workflow 会把对应版本发到 npm。发版前把 `package.json` 的 `version` 改成与标签一致（不含 `v` 前缀）。
 
 ## License
 

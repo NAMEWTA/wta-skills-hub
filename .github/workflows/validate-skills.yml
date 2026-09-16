@@ -17,3 +17,5 @@ jobs:
           node-version: "22"
       - name: Validate SKILL.md frontmatter
         run: node scripts/validate-skills.mjs
+      - name: Test installer CLI
+        run: node --test test/cli.test.mjs
