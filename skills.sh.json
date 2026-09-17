@@ -11,6 +11,11 @@
       "title": "Windows",
       "description": "Skills for Windows development machines.",
       "skills": ["windows-dev-disk-cleanup"]
+    },
+    {
+      "title": "Grok Bots",
+      "description": "Skills for Grok Bot team snapshots, restore, and steward setup.",
+      "skills": ["grok-bot-team-steward"]
     }
   ]
 }

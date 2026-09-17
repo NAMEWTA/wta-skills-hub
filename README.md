@@ -15,6 +15,7 @@ npx @namewta/skills-hub
 # 指定技能
 npx @namewta/skills-hub --skill herdr
 npx @namewta/skills-hub --skill windows-dev-disk-cleanup -a grok
+npx @namewta/skills-hub --skill grok-bot-team-steward -a grok
 
 # 指定智能体（可重复 -a；逗号分隔也可以；`*` 表示全部）
 npx @namewta/skills-hub --skill herdr -a grok -a cursor -a codex
@@ -86,8 +87,19 @@ gh skill install NAMEWTA/wta-skills-hub herdr
 
 | Skill | 路径 | 作用 |
 |---|---|---|
+| **grok-bot-team-steward** | [`skills/grok-bot-team-steward/SKILL.md`](skills/grok-bot-team-steward/SKILL.md) | 把当前账号的 Grok Bot 团队导出为 dated 快照目录 `grok-bot-team-YYYY-MM-DD/`，或按该目录在新账号上重建花名册、技能、群聊、记忆与例行任务。用户说「快照」「备份团队」「持久化」「导出花名册」「换机初始化」「恢复团队」「激活管家技能」时使用。 |
 | **herdr** | [`skills/herdr/SKILL.md`](skills/herdr/SKILL.md) | 在 Herdr 终端工作区里控制窗格、标签页、工作区，并协调多个编程智能体。只在用户明确提到 Herdr，或要求用 Herdr 查看/控制终端与其它智能体时启用。必须运行在 Herdr 窗格内（`HERDR_ENV=1`）。本仓库这份相对上游官方 skill 增加了一条团队约定：在 Herdr 里启动 Grok / Codex 时默认完全授权，使用 `grok --permission-mode bypassPermissions` 与 `codex --dangerously-bypass-approvals-and-sandbox`（或经 `herdr agent start ... --` 原样传入）。 |
 | **windows-dev-disk-cleanup** | [`skills/windows-dev-disk-cleanup/SKILL.md`](skills/windows-dev-disk-cleanup/SKILL.md) | 审计、规划并安全执行 Windows 开发机磁盘清理：C 盘压力、大文件、开发工具链、缓存、已装应用、系统托管存储。斜杠命令 `/windows-dev-disk-cleanup`。只读排查与真正删除必须分开；任何删除、卸载或系统改动都要用户对清单或具名项明确授权。 |
+
+### grok-bot-team-steward
+
+Grok Bot 团队管家。装上后，智能体可以：
+
+- **snapshot**：扫描当前 Bot、群聊、技能、例行任务、记忆和对话，写入 `/workspace/grok-bot-team-YYYY-MM-DD/`（同一天第二次运行带 `HHMM` 后缀，不覆盖已有目录）
+- **restore**：读取一份 dated 目录，按文档重建花名册、技能、群聊和记忆参考；routine 一律先建成暂停
+- **diff**：对比两份快照，只报告差异
+
+硬规则：不发明花名册里没有的角色；不把密钥写入任何文件；恢复结束后必须给出 DROP LIST（登录态、cookie、未能导出的对话等带不回来的东西）。完整协议见 [`skills/grok-bot-team-steward/SKILL.md`](skills/grok-bot-team-steward/SKILL.md) 与 [`skills/grok-bot-team-steward/references/`](skills/grok-bot-team-steward/references/)。
 
 ### herdr
 
@@ -139,6 +151,15 @@ wta-skills-hub/
     validate-skills.yml
     release.yml
   skills/
+    grok-bot-team-steward/
+      SKILL.md
+      README.md
+      INSTALL.md
+      CHEATSHEET.md
+      steward/
+      references/
+      templates/snapshot/
+      scripts/
     herdr/
       SKILL.md
     windows-dev-disk-cleanup/
