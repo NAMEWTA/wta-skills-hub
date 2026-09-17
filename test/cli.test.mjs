@@ -193,9 +193,12 @@ describe("CLI", () => {
       encoding: "utf8",
     });
     assert.equal(result.status, 0);
-    assert.match(result.stdout, /npx wta-skills-hub/);
+    assert.match(result.stdout, /npx @namewta\/skills-hub/);
     assert.match(result.stdout, /--skill/);
-    assert.equal(usage("wta-skills-hub").includes("npx wta-skills-hub"), true);
+    assert.equal(
+      usage("@namewta/skills-hub").includes("npx @namewta/skills-hub"),
+      true
+    );
   });
 
   it("lists packaged skills", () => {
@@ -203,7 +206,7 @@ describe("CLI", () => {
       encoding: "utf8",
     });
     assert.equal(result.status, 0);
-    assert.match(result.stdout, /wta-skills-hub 1\.0\.1/);
+    assert.match(result.stdout, /@namewta\/skills-hub 0\.0\.1/);
     assert.match(result.stdout, /herdr/);
     assert.match(result.stdout, /windows-dev-disk-cleanup/);
   });
