@@ -16,6 +16,16 @@
       "title": "Grok Bots",
       "description": "Skills for Grok Bot team snapshots, restore, and steward setup.",
       "skills": ["grok-bot-team-steward"]
+    },
+    {
+      "title": "Gitea",
+      "description": "Skills for Gitea and Forgejo HTTP API: issues, pull requests, and releases.",
+      "skills": ["gitea-repo"]
+    },
+    {
+      "title": "GitHub",
+      "description": "Skills for personal GitHub repository lifecycle and starring.",
+      "skills": ["github-repo-steward"]
     }
   ]
 }

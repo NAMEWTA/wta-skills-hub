@@ -1,0 +1,4 @@
+interface:
+  display_name: "Gitea repo API"
+  short_description: "用 /api/v1 操作 Gitea/Forgejo 的 issue、PR、评论、标签与 Release，对齐 gh"
+  default_prompt: "Use $gitea-repo to talk to the Gitea or Forgejo HTTP API (issues, PRs, comments, labels, releases) instead of gh. Do not use this skill for GitHub.com."

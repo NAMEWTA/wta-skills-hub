@@ -14,6 +14,8 @@ npx @namewta/skills-hub
 
 # 指定技能
 npx @namewta/skills-hub --skill herdr
+npx @namewta/skills-hub --skill gitea-repo -a grok
+npx @namewta/skills-hub --skill github-repo-steward
 npx @namewta/skills-hub --skill windows-dev-disk-cleanup -a grok
 npx @namewta/skills-hub --skill grok-bot-team-steward -a grok
 
@@ -87,9 +89,34 @@ gh skill install NAMEWTA/wta-skills-hub herdr
 
 | Skill | 路径 | 作用 |
 |---|---|---|
+| **gitea-repo** | [`skills/gitea-repo/SKILL.md`](skills/gitea-repo/SKILL.md) | 用 Gitea/Forgejo HTTP API（`/api/v1`）操作任意实例上的 issue、PR、评论、标签、里程碑、Release。斜杠命令 `/gitea-repo`。对齐 `gh`；GitHub.com 不要用本技能。 |
+| **github-repo-steward** | [`skills/github-repo-steward/SKILL.md`](skills/github-repo-steward/SKILL.md) | 个人 GitHub 仓库全生命周期管理：盘点自有仓与 star、诊断 PAT/`gh` 权限、归档、删除、批量 star/unstar。斜杠命令 `/github-repo-steward`。破坏性操作必须先盘点并对具名仓库明确授权。 |
 | **grok-bot-team-steward** | [`skills/grok-bot-team-steward/SKILL.md`](skills/grok-bot-team-steward/SKILL.md) | 把当前账号的 Grok Bot 团队导出为 dated 快照目录 `grok-bot-team-YYYY-MM-DD/`，或按该目录在新账号上重建花名册、技能、群聊、记忆与例行任务。用户说「快照」「备份团队」「持久化」「导出花名册」「换机初始化」「恢复团队」「激活管家技能」时使用。 |
 | **herdr** | [`skills/herdr/SKILL.md`](skills/herdr/SKILL.md) | 在 Herdr 终端工作区里控制窗格、标签页、工作区，并协调多个编程智能体。只在用户明确提到 Herdr，或要求用 Herdr 查看/控制终端与其它智能体时启用。必须运行在 Herdr 窗格内（`HERDR_ENV=1`）。本仓库这份相对上游官方 skill 增加了一条团队约定：在 Herdr 里启动 Grok / Codex 时默认完全授权，使用 `grok --permission-mode bypassPermissions` 与 `codex --dangerously-bypass-approvals-and-sandbox`（或经 `herdr agent start ... --` 原样传入）。 |
 | **windows-dev-disk-cleanup** | [`skills/windows-dev-disk-cleanup/SKILL.md`](skills/windows-dev-disk-cleanup/SKILL.md) | 审计、规划并安全执行 Windows 开发机磁盘清理：C 盘压力、大文件、开发工具链、缓存、已装应用、系统托管存储。斜杠命令 `/windows-dev-disk-cleanup`。只读排查与真正删除必须分开；任何删除、卸载或系统改动都要用户对清单或具名项明确授权。 |
+
+### gitea-repo
+
+任意 Gitea / Forgejo 实例的 HTTP API 封装（行为对齐 `gh`）。装上后，智能体可以：
+
+- 从 `--host` / `GITEA_HOST` / git remote 解析实例，从 `--repo` / `GITEA_REPO` / remote 解析 `owner/repo`
+- 列/看/建/关 issue，写评论，管标签与里程碑
+- 列/看/建/合并 PR（合并字段必须是 `Do`）
+- 列 Release、看仓库、透传任意 `/api/v1` 路径
+
+令牌只从 `--token` / `GITEA_TOKEN` / `git credential` 读取，不进 URL、不进对话。破坏性操作（删 issue、合 PR、删 Release）必须用户点名。Git 提交推送仍走 `git`。脚本在 [`skills/gitea-repo/scripts/gitea_api.py`](skills/gitea-repo/scripts/gitea_api.py)。
+
+### github-repo-steward
+
+个人 GitHub 账号的仓库管家。装上后，智能体可以：
+
+- **inventory**：列出自己的仓（原创/fork、归档、最近推送、CI、开放 PR）
+- **stars**：列出或批量取消 star
+- **archive / delete**：归档（可逆）或删除（约 90 天可申请恢复）
+- **hygiene**：先出建议清单，等用户点名再执行
+- **auth**：根据 403 的 `X-Accepted-Github-Permissions` 告诉用户要开哪项 PAT 权限
+
+归档/删除需要 Fine-grained PAT 的 Repository **Administration: Read and write**；star/unstar 需要 Account **Starring: Read and write**（不是仓库权限）。完整协议见 [`skills/github-repo-steward/SKILL.md`](skills/github-repo-steward/SKILL.md)。
 
 ### grok-bot-team-steward
 
@@ -151,6 +178,15 @@ wta-skills-hub/
     validate-skills.yml
     release.yml
   skills/
+    gitea-repo/
+      SKILL.md
+      agents/openai.yaml
+      references/
+      scripts/gitea_api.py
+    github-repo-steward/
+      SKILL.md
+      references/
+      scripts/inventory.sh
     grok-bot-team-steward/
       SKILL.md
       README.md

@@ -9,3 +9,6 @@ dist/
 .vscode/
 *.swp
 *~
+temp/
+__pycache__/
+*.pyc
