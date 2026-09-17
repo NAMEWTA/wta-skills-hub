@@ -1,6 +1,6 @@
 {
-  "name": "wta-skills-hub",
-  "version": "1.0.1",
+  "name": "@namewta/skills-hub",
+  "version": "0.0.1",
   "description": "Install WTA agent skills into Grok, Cursor, Codex, Claude Code, Pi, and other Agent Skills-compatible tools.",
   "type": "module",
   "bin": {

@@ -4,6 +4,18 @@ on:
   push:
     tags:
       - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag (e.g. v0.0.1)"
+        required: true
+        type: string
+        default: "v0.0.1"
+      delete_tags:
+        description: "Comma-separated existing tags/releases to delete first"
+        required: false
+        type: string
+        default: ""
 
 jobs:
   release:
@@ -15,6 +27,8 @@ jobs:
       GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
@@ -23,12 +37,44 @@ jobs:
         run: node scripts/validate-skills.mjs
       - name: Test installer CLI
         run: node --test test/cli.test.mjs
+      - name: Delete requested tags and releases
+        if: github.event_name == 'workflow_dispatch' && inputs.delete_tags != ''
+        env:
+          DELETE_TAGS: ${{ inputs.delete_tags }}
+        run: |
+          set -euo pipefail
+          IFS=',' read -ra TAGS <<< "$DELETE_TAGS"
+          for tag in "${TAGS[@]}"; do
+            tag="${tag// /}"
+            [ -z "$tag" ] && continue
+            gh release delete "$tag" --yes --cleanup-tag 2>/dev/null || true
+            git push origin --delete "refs/tags/$tag" 2>/dev/null || true
+          done
+      - name: Resolve release tag
+        id: tag
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_TAG: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          git push origin --delete refs/heads/tmp-rename-check 2>/dev/null || true
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            TAG="$INPUT_TAG"
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git tag "$TAG"
+            git push origin "refs/tags/$TAG"
+          else
+            TAG="$GITHUB_REF_NAME"
+          fi
+          echo "name=$TAG" >> "$GITHUB_OUTPUT"
       - name: Create GitHub release
         run: |
-          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
-            echo "Release $GITHUB_REF_NAME already exists"
+          TAG="${{ steps.tag.outputs.name }}"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG already exists"
           else
-            gh release create "$GITHUB_REF_NAME" --generate-notes --latest --title "$GITHUB_REF_NAME"
+            gh release create "$TAG" --generate-notes --latest --title "$TAG"
           fi
       - name: Publish to npm
         env:

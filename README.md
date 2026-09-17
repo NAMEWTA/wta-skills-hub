@@ -1,8 +1,8 @@
-# wta-skills-hub
+# @namewta/skills-hub
 
 给 Grok、Cursor、Codex、Claude Code、Pi 等编程智能体用的 Skills 仓库。每个 skill 是一份带 YAML 头的 `SKILL.md`，智能体按需加载，用来固定本团队的操作约定。
 
-布局符合 [skills.sh](https://skills.sh) / Agent Skills 发现规则：每个 skill 在 `skills/<name>/SKILL.md`。npm 包 `wta-skills-hub` 把这些文件带上，并用官方安装器 [vercel-labs/skills](https://github.com/vercel-labs/skills) 写进各 agent 的全局配置目录。Windows、macOS、Linux 均可。
+布局符合 [skills.sh](https://skills.sh) / Agent Skills 发现规则：每个 skill 在 `skills/<name>/SKILL.md`。npm 包 `@namewta/skills-hub` 把这些文件带上，并用官方安装器 [vercel-labs/skills](https://github.com/vercel-labs/skills) 写进各 agent 的全局配置目录。Windows、macOS、Linux 均可。
 
 ## 安装
 
@@ -10,27 +10,27 @@
 
 ```bash
 # 交互选择 skill 和 agent，安装到全局
-npx wta-skills-hub
+npx @namewta/skills-hub
 
 # 指定技能
-npx wta-skills-hub --skill herdr
-npx wta-skills-hub --skill windows-dev-disk-cleanup -a grok
+npx @namewta/skills-hub --skill herdr
+npx @namewta/skills-hub --skill windows-dev-disk-cleanup -a grok
 
 # 指定智能体（可重复 -a；逗号分隔也可以；`*` 表示全部）
-npx wta-skills-hub --skill herdr -a grok -a cursor -a codex
-npx wta-skills-hub herdr --agent '*'
+npx @namewta/skills-hub --skill herdr -a grok -a cursor -a codex
+npx @namewta/skills-hub herdr --agent '*'
 
 # 全部技能 → 本机检测到的全部智能体，跳过确认
-npx wta-skills-hub --all
+npx @namewta/skills-hub --all
 
 # 只看包装里有哪些 skill
-npx wta-skills-hub --list
+npx @namewta/skills-hub --list
 ```
 
 只装当前项目、不装全局时加 `--project`：
 
 ```bash
-npx wta-skills-hub --skill herdr --project -a grok
+npx @namewta/skills-hub --skill herdr --project -a grok
 ```
 
 也可以不经过本包 CLI，直接用官方安装器从 GitHub 装（同样默认建议加 `-g`）：
@@ -50,7 +50,7 @@ gh skill install NAMEWTA/wta-skills-hub herdr
 
 ## 选项
 
-`npx wta-skills-hub`：
+`npx @namewta/skills-hub`：
 
 | 选项 | 作用 |
 |---|---|
