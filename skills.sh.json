@@ -26,6 +26,11 @@
       "title": "GitHub",
       "description": "Skills for personal GitHub repository lifecycle and starring.",
       "skills": ["github-repo-steward"]
+    },
+    {
+      "title": "VS Code",
+      "description": "Skills for configuring a VS Code profile for fullstack development.",
+      "skills": ["vscode-fullstack"]
     }
   ]
 }

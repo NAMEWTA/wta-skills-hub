@@ -1,0 +1,4 @@
+interface:
+  display_name: "VS Code 全栈 Profile"
+  short_description: "为当前 VS Code Profile 补齐 Python、Vue、React 和 Go"
+  default_prompt: "使用 $vscode-fullstack 配置当前 VS Code Profile，补齐 Python、Vue、React、Go 的扩展和设置，并保留已有语言配置。"

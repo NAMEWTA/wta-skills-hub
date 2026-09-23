@@ -187,6 +187,7 @@ describe("discoverSkills", () => {
         "github-repo-steward",
         "grok-bot-team-steward",
         "herdr",
+        "vscode-fullstack",
         "windows-dev-disk-cleanup",
       ]
     );
@@ -212,12 +213,13 @@ describe("CLI", () => {
       encoding: "utf8",
     });
     assert.equal(result.status, 0);
-    assert.match(result.stdout, /@namewta\/skills-hub 0\.0\.3/);
+    assert.match(result.stdout, /@namewta\/skills-hub 0\.0\.4/);
     assert.match(result.stdout, /gitea-repo/);
     assert.match(result.stdout, /github-repo-steward/);
     assert.match(result.stdout, /grok-bot-team-steward/);
     assert.match(result.stdout, /herdr/);
     assert.match(result.stdout, /windows-dev-disk-cleanup/);
+    assert.match(result.stdout, /vscode-fullstack/);
   });
 
   it("exits 2 on unknown options", () => {

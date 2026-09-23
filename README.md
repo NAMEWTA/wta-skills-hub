@@ -17,6 +17,7 @@ npx @namewta/skills-hub --skill herdr
 npx @namewta/skills-hub --skill gitea-repo -a grok
 npx @namewta/skills-hub --skill github-repo-steward
 npx @namewta/skills-hub --skill windows-dev-disk-cleanup -a grok
+npx @namewta/skills-hub --skill vscode-fullstack -a grok
 npx @namewta/skills-hub --skill grok-bot-team-steward -a grok
 
 # 指定智能体（可重复 -a；逗号分隔也可以；`*` 表示全部）
@@ -94,6 +95,7 @@ gh skill install NAMEWTA/wta-skills-hub herdr
 | **grok-bot-team-steward** | [`skills/grok-bot-team-steward/SKILL.md`](skills/grok-bot-team-steward/SKILL.md) | 把当前账号的 Grok Bot 团队导出为 dated 快照目录 `grok-bot-team-YYYY-MM-DD/`，或按该目录在新账号上重建花名册、技能、群聊、记忆与例行任务。用户说「快照」「备份团队」「持久化」「导出花名册」「换机初始化」「恢复团队」「激活管家技能」时使用。 |
 | **herdr** | [`skills/herdr/SKILL.md`](skills/herdr/SKILL.md) | 在 Herdr 终端工作区里控制窗格、标签页、工作区，并协调多个编程智能体。只在用户明确提到 Herdr，或要求用 Herdr 查看/控制终端与其它智能体时启用。必须运行在 Herdr 窗格内（`HERDR_ENV=1`）。本仓库这份相对上游官方 skill 增加了一条团队约定：在 Herdr 里启动 Grok / Codex 时默认完全授权，使用 `grok --permission-mode bypassPermissions` 与 `codex --dangerously-bypass-approvals-and-sandbox`（或经 `herdr agent start ... --` 原样传入）。 |
 | **windows-dev-disk-cleanup** | [`skills/windows-dev-disk-cleanup/SKILL.md`](skills/windows-dev-disk-cleanup/SKILL.md) | 审计、规划并安全执行 Windows 开发机磁盘清理：C 盘压力、大文件、开发工具链、缓存、已装应用、系统托管存储。斜杠命令 `/windows-dev-disk-cleanup`。只读排查与真正删除必须分开；任何删除、卸载或系统改动都要用户对清单或具名项明确授权。 |
+| **vscode-fullstack** | [`skills/vscode-fullstack/SKILL.md`](skills/vscode-fullstack/SKILL.md) | 配置当前 VS Code 或 VS Code Remote Profile，补齐 Python、Vue、React、Go 的扩展和按语言保存格式化，并保留已有 Java 等配置。斜杠命令 `/vscode-fullstack`。Remote SSH 上安装的扩展不会经 Settings Sync 上传。 |
 
 ### gitea-repo
 
@@ -162,6 +164,17 @@ Windows 开发机磁盘瘦身。智能体先只读盘点，把候选写进工作
 - 不把普通清理扩大到 WinSxS/`ResetBase`、pagefile、WinRE、Windows Update 数据或还原点，除非另做单独决定
 - 完整发现、分类、分阶段执行与验收见 [`skills/windows-dev-disk-cleanup/references/windows-cleanup-workflow.md`](skills/windows-dev-disk-cleanup/references/windows-cleanup-workflow.md)
 
+### vscode-fullstack
+
+把当前正在用的 VS Code Profile 配成能写 Python、Vue、React 和 Go，同时不拆掉已经在用的语言。装上后，智能体可以：
+
+- 先分辨本机 VS Code 和 Remote SSH 的用户数据，再改磁盘上真实的那个 Profile（口头名字和 `storage.json` 里的 `name` 可能不一致）
+- 只安装缺失的官方语言服务和格式化扩展，冲突项只从当前 Profile 移除
+- 按语言合并 `settings.json`，不打开全局保存格式化，避免搅动已有 Java 文件
+- 说明 Remote 窗口里的扩展不会进 GitHub Settings Sync，并给出本机安装命令
+
+扩展 ID 和设置片段见 [`skills/vscode-fullstack/references/extensions-and-settings.md`](skills/vscode-fullstack/references/extensions-and-settings.md)。
+
 ## 仓库结构
 
 ```text
@@ -202,6 +215,10 @@ wta-skills-hub/
       SKILL.md
       agents/openai.yaml
       references/windows-cleanup-workflow.md
+    vscode-fullstack/
+      SKILL.md
+      agents/openai.yaml
+      references/extensions-and-settings.md
 ```
 
 新增 skill：在 `skills/<name>/` 下放 `SKILL.md`（YAML 头含 `name` 与 `description`，`name` 必须与目录名一致、仅小写字母数字和连字符），并在本 README 的 Skills 表里补一行。本地校验：
