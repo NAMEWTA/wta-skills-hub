@@ -19,6 +19,7 @@ npx @namewta/skills-hub --skill github-repo-steward
 npx @namewta/skills-hub --skill windows-dev-disk-cleanup -a grok
 npx @namewta/skills-hub --skill vscode-fullstack -a grok
 npx @namewta/skills-hub --skill grok-bot-team-steward -a grok
+npx @namewta/skills-hub --skill job-application -a grok
 
 # 指定智能体（可重复 -a；逗号分隔也可以；`*` 表示全部）
 npx @namewta/skills-hub --skill herdr -a grok -a cursor -a codex
@@ -96,6 +97,7 @@ gh skill install NAMEWTA/wta-skills-hub herdr
 | **herdr** | [`skills/herdr/SKILL.md`](skills/herdr/SKILL.md) | 在 Herdr 终端工作区里控制窗格、标签页、工作区，并协调多个编程智能体。只在用户明确提到 Herdr，或要求用 Herdr 查看/控制终端与其它智能体时启用。必须运行在 Herdr 窗格内（`HERDR_ENV=1`）。本仓库这份相对上游官方 skill 增加了一条团队约定：在 Herdr 里启动 Grok / Codex 时默认完全授权，使用 `grok --permission-mode bypassPermissions` 与 `codex --dangerously-bypass-approvals-and-sandbox`（或经 `herdr agent start ... --` 原样传入）。 |
 | **windows-dev-disk-cleanup** | [`skills/windows-dev-disk-cleanup/SKILL.md`](skills/windows-dev-disk-cleanup/SKILL.md) | 审计、规划并安全执行 Windows 开发机磁盘清理：C 盘压力、大文件、开发工具链、缓存、已装应用、系统托管存储。斜杠命令 `/windows-dev-disk-cleanup`。只读排查与真正删除必须分开；任何删除、卸载或系统改动都要用户对清单或具名项明确授权。 |
 | **vscode-fullstack** | [`skills/vscode-fullstack/SKILL.md`](skills/vscode-fullstack/SKILL.md) | 配置当前 VS Code 或 VS Code Remote Profile，补齐 Python、Vue、React、Go 的扩展和按语言保存格式化，并保留已有 Java 等配置。斜杠命令 `/vscode-fullstack`。Remote SSH 上安装的扩展不会经 Settings Sync 上传。 |
+| **job-application** | [`skills/job-application/SKILL.md`](skills/job-application/SKILL.md) | 扫描指定知识库建成经历原件，再按岗位派生投递简历、PDF、3–4 分钟自我介绍、预测题与提升计划。斜杠命令 `/job-application`。产物写到运行根目录的 `job-application/`（或用户指定路径）；路径记入本技能 `config.json`。不编造知识库里没有的经历。 |
 
 ### gitea-repo
 
@@ -175,6 +177,17 @@ Windows 开发机磁盘瘦身。智能体先只读盘点，把候选写进工作
 
 扩展 ID 和设置片段见 [`skills/vscode-fullstack/references/extensions-and-settings.md`](skills/vscode-fullstack/references/extensions-and-settings.md)。
 
+### job-application
+
+从个人知识库生成求职包。装上后，智能体可以：
+
+- **ingest / master**：扫指定目录，写成可增长的经历原件和带 `claim_id` 的证据表
+- **pack**：给岗位后派生投递简历、3–4 分钟自我介绍、预测题和提升计划
+- 把产物写到当前运行根目录的 `job-application/`，或用户当场指定的路径
+- 把路径记入技能目录的 `config.json`（不进 git）和产物根的同名文件
+
+没有证据的数字、职级和技能不得写进简历或口播稿。协议见 [`skills/job-application/SKILL.md`](skills/job-application/SKILL.md)。
+
 ## 仓库结构
 
 ```text
@@ -219,6 +232,13 @@ wta-skills-hub/
       SKILL.md
       agents/openai.yaml
       references/extensions-and-settings.md
+    job-application/
+      SKILL.md
+      agents/openai.yaml
+      references/
+      templates/
+      scripts/
+      assets/resume.css
 ```
 
 新增 skill：在 `skills/<name>/` 下放 `SKILL.md`（YAML 头含 `name` 与 `description`，`name` 必须与目录名一致、仅小写字母数字和连字符），并在本 README 的 Skills 表里补一行。本地校验：
