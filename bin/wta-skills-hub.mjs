@@ -2,7 +2,7 @@
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { discoverSkills } from "../lib/discover-skills.mjs";
+import { CATEGORIES, discoverSkills } from "../lib/discover-skills.mjs";
 import { parseArgs, usage } from "../lib/parse-args.mjs";
 import {
   buildSkillsAddArgv,
@@ -22,8 +22,10 @@ function printList(pkg, skills) {
     console.log("  (no skills found)");
     return;
   }
-  for (const skill of skills) {
-    console.log(`  ${skill.name}`);
+  for (const [category, title] of Object.entries(CATEGORIES)) {
+    const members = skills.filter((skill) => skill.category === category);
+    console.log(`  ${title} (${category})${members.length ? "" : " — 待扩展"}`);
+    for (const skill of members) console.log(`    ${skill.name}`);
   }
 }
 
@@ -56,7 +58,7 @@ function main(argv) {
   }
 
   const addArgv = buildSkillsAddArgv(ROOT, options, skillsCliSpec(pkg));
-  return runSkillsCli(addArgv, { cwd: ROOT });
+  return runSkillsCli(addArgv, { cwd: process.cwd() });
 }
 
 const exitCode = main(process.argv.slice(2));

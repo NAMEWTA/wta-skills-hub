@@ -1,0 +1,4 @@
+interface:
+  display_name: "Grok Bot 团队管家"
+  short_description: "导出恢复或比较 Grok Bot 团队快照，核验真实覆盖范围"
+  default_prompt: "使用 $grok-bot-team-steward，完成我指定的任务并报告验证结果。"

@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 /**
- * Validate skills/<name>/SKILL.md for npx skills add / Agent Skills.
+ * Validate categorized skill packages, metadata, links, and website groupings.
  * Rules aligned with vercel-labs/skills parseSkillMd() and agent-skills discovery.
  */
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { discoverSkills } from "../lib/discover-skills.mjs";
+import { validateCatalog } from "../lib/validate-catalog.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-const { files, errors, seen } = discoverSkills(ROOT);
+const { files, errors, seen } = validateCatalog(ROOT);
 
 if (errors.length > 0) {
   console.error(`validate-skills: ${errors.length} error(s)`);

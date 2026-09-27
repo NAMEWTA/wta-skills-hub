@@ -1,6 +1,6 @@
 {
   "name": "@namewta/skills-hub",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Install WTA agent skills into Grok, Cursor, Codex, Claude Code, Pi, and other Agent Skills-compatible tools.",
   "type": "module",
   "bin": {
@@ -12,12 +12,14 @@
     "skills",
     "skills.sh.json",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "docs",
+    "evals"
   ],
   "scripts": {
-    "test": "node --test test/cli.test.mjs",
+    "test": "node --test test/cli.test.mjs test/catalog.test.mjs test/helpers.test.mjs test/packaging.test.mjs",
     "validate": "node scripts/validate-skills.mjs",
-    "prepublishOnly": "node scripts/validate-skills.mjs && node --test test/cli.test.mjs"
+    "prepublishOnly": "npm run validate && npm test"
   },
   "skillsCli": "skills@1.5.26",
   "engines": {
@@ -44,5 +46,8 @@
   "license": "MIT",
   "publishConfig": {
     "access": "public"
+  },
+  "dependencies": {
+    "yaml": "2.9.1"
   }
 }

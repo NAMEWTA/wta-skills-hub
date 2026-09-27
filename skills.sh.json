@@ -3,34 +3,29 @@
   "notGrouped": "bottom",
   "groupings": [
     {
-      "title": "Terminal",
-      "description": "Skills for terminal multiplexers and multi-agent workflows.",
-      "skills": ["herdr"]
+      "title": "代码开发",
+      "description": "代码开发方向的工作流。",
+      "skills": [
+        "gitea-repo",
+        "github-repo-steward",
+        "vscode-fullstack"
+      ]
     },
     {
-      "title": "Windows",
-      "description": "Skills for Windows development machines.",
-      "skills": ["windows-dev-disk-cleanup"]
+      "title": "机器优化",
+      "description": "机器优化方向的工作流。",
+      "skills": [
+        "windows-dev-disk-cleanup",
+        "proxy-region-locale"
+      ]
     },
     {
-      "title": "Grok Bots",
-      "description": "Skills for Grok Bot team snapshots, restore, and steward setup.",
-      "skills": ["grok-bot-team-steward"]
-    },
-    {
-      "title": "Gitea",
-      "description": "Skills for Gitea and Forgejo HTTP API: issues, pull requests, and releases.",
-      "skills": ["gitea-repo"]
-    },
-    {
-      "title": "GitHub",
-      "description": "Skills for personal GitHub repository lifecycle and starring.",
-      "skills": ["github-repo-steward"]
-    },
-    {
-      "title": "VS Code",
-      "description": "Skills for configuring a VS Code profile for fullstack development.",
-      "skills": ["vscode-fullstack"]
+      "title": "智能体与自动化",
+      "description": "智能体与自动化方向的工作流。",
+      "skills": [
+        "herdr",
+        "grok-bot-team-steward"
+      ]
     }
   ]
 }

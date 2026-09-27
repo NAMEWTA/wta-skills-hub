@@ -1,0 +1,98 @@
+{
+  "source_commit": "d649a41f9d024bd63c25ef600169abd432e25f91",
+  "includes_uncommitted_work": true,
+  "entrypoints": {
+    "grok-bot-team-steward": {
+      "sha256": "c4732818aa8416cd6871ec91cddcb4cad07ed445e22a6e815dcde421e71c39d0",
+      "bytes": 12839,
+      "lines": 263
+    },
+    "vscode-fullstack": {
+      "sha256": "b48726cac0e1081bef6ccf66d63a47e7c6637571be2b0b733b2103265e373184",
+      "bytes": 5960,
+      "lines": 55
+    },
+    "gitea-repo": {
+      "sha256": "5152733693ef5a0e87bf0b2a17e3165bdf5c8a896e026c835974487d605f287a",
+      "bytes": 5945,
+      "lines": 109
+    },
+    "proxy-region-locale": {
+      "sha256": "667752bb0447e1176a6f4caeffe6d2d1470ec111a431d9d4aa768cf6b674c8d6",
+      "bytes": 2516,
+      "lines": 32
+    },
+    "windows-dev-disk-cleanup": {
+      "sha256": "ef48826dd735991cc106d5f0a2eed444e6f087192dbdb84d8aeb2e6178023b23",
+      "bytes": 4047,
+      "lines": 43
+    },
+    "herdr": {
+      "sha256": "fcf96265cac27b28d2e8d8d13bb8328639e3bc87383143f1e5d64cbd77bd391f",
+      "bytes": 13231,
+      "lines": 233
+    },
+    "github-repo-steward": {
+      "sha256": "c0927bd767c4d764c5eb4740a67447b1fd217c61ffa9762df2928e364551cf8c",
+      "bytes": 6537,
+      "lines": 140
+    }
+  },
+  "evaluation": "fresh independent agents; metadata-only routing followed by offline behavioral simulations",
+  "routing": {
+    "coding": [
+      "gitea-repo",
+      "gitea-repo",
+      null,
+      "github-repo-steward",
+      "github-repo-steward",
+      null,
+      "vscode-fullstack",
+      "vscode-fullstack",
+      null
+    ],
+    "system": [
+      "windows-dev-disk-cleanup",
+      "windows-dev-disk-cleanup",
+      null,
+      "proxy-region-locale",
+      null,
+      "proxy-region-locale",
+      null
+    ],
+    "automation": [
+      "herdr",
+      null,
+      "grok-bot-team-steward",
+      "grok-bot-team-steward",
+      null,
+      "grok-bot-team-steward"
+    ]
+  },
+  "executed_evidence": {
+    "gitea_label_65": {
+      "exit_code": 1,
+      "requests": 1,
+      "limit": 50,
+      "result": "label-65 not found; original helper monkeypatched with an in-memory API"
+    },
+    "snapshot_template_only": {
+      "exit_code": 0,
+      "bots": [
+        "_SLUG"
+      ],
+      "completed_marker": false,
+      "result": "incorrect OK from original shell validator"
+    },
+    "missing_gitea_context": {
+      "exit_code": 1,
+      "credential_or_network_calls": 0
+    }
+  },
+  "simulation_findings": [
+    "GitHub write-probe conflicts with read-only diagnosis; evaluator avoided execution",
+    "VS Code JSONC and default-profile handling required evaluator inference",
+    "Ubuntu rollback path could overwrite prior run; NTP wording overstates global sync failure",
+    "Grok activate/setup/diff boundaries ambiguous; evaluator respected user scope"
+  ]
+}

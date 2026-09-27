@@ -1,0 +1,4 @@
+interface:
+  display_name: "代理出口区域配置"
+  short_description: "依据代理出口配置 Ubuntu 时区与区域，保留可用回滚记录"
+  default_prompt: "使用 $proxy-region-locale。先读取当前代理出口 IP 的地理位置，再把这台主机的时区、语言和区域格式改成与该地点一致。不要改代理或 DNS。"

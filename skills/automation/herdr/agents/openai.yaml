@@ -1,0 +1,4 @@
+interface:
+  display_name: "Herdr 终端协作"
+  short_description: "在 Herdr 托管环境中控制窗格、命令和已识别编程智能体"
+  default_prompt: "使用 $herdr，完成我指定的任务并报告验证结果。"

@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
+import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
@@ -15,6 +16,7 @@ import {
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const BIN = join(ROOT, "bin", "wta-skills-hub.mjs");
+const PKG = JSON.parse(readFileSync(join(ROOT, "package.json"), "utf8"));
 
 describe("parseArgs", () => {
   it("defaults to an empty install request", () => {
@@ -187,6 +189,7 @@ describe("discoverSkills", () => {
         "github-repo-steward",
         "grok-bot-team-steward",
         "herdr",
+        "proxy-region-locale",
         "vscode-fullstack",
         "windows-dev-disk-cleanup",
       ]
@@ -213,7 +216,10 @@ describe("CLI", () => {
       encoding: "utf8",
     });
     assert.equal(result.status, 0);
-    assert.match(result.stdout, /@namewta\/skills-hub 0\.0\.4/);
+    assert.match(
+      result.stdout,
+      new RegExp(`@namewta/skills-hub ${PKG.version.replaceAll(".", "\\.")}`)
+    );
     assert.match(result.stdout, /gitea-repo/);
     assert.match(result.stdout, /github-repo-steward/);
     assert.match(result.stdout, /grok-bot-team-steward/);
