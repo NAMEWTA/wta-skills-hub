@@ -15,7 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 GITEA = ROOT / "skills/coding/gitea-repo/scripts/gitea_api.py"
 GROK = ROOT / "skills/automation/grok-bot-team-steward"
 api = {"__name__": "gitea_test_module"}
-exec(compile(GITEA.read_text(), str(GITEA), "exec"), api)
+exec(compile(GITEA.read_text(encoding="utf-8"), str(GITEA), "exec"), api)
 
 
 class GiteaTests(unittest.TestCase):
