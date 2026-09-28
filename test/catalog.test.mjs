@@ -27,10 +27,11 @@ function skill(root, category, name, body = "") {
 test("catalog is categorized, complete and excludes the bundled Grok template", () => {
   const result = validateCatalog(ROOT);
   assert.deepEqual(result.errors, []);
-  assert.equal(result.skills.length, 7);
+  assert.equal(result.skills.length, 8);
   assert.equal(result.skills.filter((s) => s.category === "coding").length, 3);
   assert.equal(result.skills.filter((s) => s.category === "system").length, 2);
   assert.equal(result.skills.filter((s) => s.category === "automation").length, 2);
+  assert.deepEqual(result.skills.filter((s) => s.category === "design").map((s) => s.name), ["photo-retouch"]);
 });
 
 test("discovery stops at skill roots, even for malformed embedded templates", (t) => {

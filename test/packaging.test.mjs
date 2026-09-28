@@ -16,7 +16,7 @@ function findPackage(value) {
   return null;
 }
 
-test("npm package contains seven categorized skills and no Python caches", () => {
+test("npm package contains eight categorized skills and no Python caches", () => {
   // npm_execpath is a JavaScript CLI entrypoint, avoiding .cmd shell differences.
   const npmCli = process.env.npm_execpath;
   assert.ok(npmCli, "run packaging tests via npm test");
@@ -25,8 +25,20 @@ test("npm package contains seven categorized skills and no Python caches", () =>
   const pkg = findPackage(JSON.parse(result.stdout));
   assert.ok(pkg, "supported npm pack JSON shape");
   const paths = pkg.files.map((file) => file.path);
-  assert.equal(paths.filter((path) => /^skills\/[^/]+\/[^/]+\/SKILL\.md$/.test(path)).length, 7);
+  assert.equal(paths.filter((path) => /^skills\/[^/]+\/[^/]+\/SKILL\.md$/.test(path)).length, 8);
   assert.ok(paths.includes("skills/automation/grok-bot-team-steward/templates/snapshot/skills/_SKILL/SKILL.md"));
   assert.ok(paths.includes("skills/system/proxy-region-locale/references/ubuntu-region.md"));
+  for (const resource of [
+    "agents/openai.yaml",
+    "references/basic-retouch.md",
+    "references/travel-creative.md",
+    "references/social-effects.md",
+    "references/formal-portrait.md",
+    "references/product-photo.md",
+    "references/repair-and-look.md",
+    "references/object-and-canvas.md",
+  ]) {
+    assert.ok(paths.includes(`skills/design/photo-retouch/${resource}`));
+  }
   assert.ok(!paths.some((path) => /(?:__pycache__|\.py[co]$|^temp\/)/.test(path)));
 });

@@ -19,7 +19,7 @@ X 检索发现 [Dominik Kundel 关于 Skills/MCP 配合的帖子](https://x.com/
 
 ## 分类及安装事实
 
-`skills/<category>/<name>` 采用四个稳定分类：coding、system、automation、writing。分类不进入 skill name，安装选择参数继续兼容。
+`skills/<category>/<name>` 采用五个分类：coding、system、automation、design、writing。design 用于照片编辑与视觉创意；分类不进入 skill name，安装选择参数继续兼容。
 
 锁定的 [Vercel Skills v1.5.26 发现实现](https://github.com/vercel-labs/skills/blob/v1.5.26/src/skills.ts) 会遍历分类容器，并在发现技能包后停止向内扫描。本项目发现逻辑对齐此边界，避免模板里的 SKILL.md 成为独立技能。
 

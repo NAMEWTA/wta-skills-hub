@@ -26,6 +26,13 @@
         "herdr",
         "grok-bot-team-steward"
       ]
+    },
+    {
+      "title": "图像与设计",
+      "description": "照片编辑、美化与视觉创意工作流。",
+      "skills": [
+        "photo-retouch"
+      ]
     }
   ]
 }

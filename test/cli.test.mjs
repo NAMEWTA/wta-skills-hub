@@ -189,6 +189,7 @@ describe("discoverSkills", () => {
         "github-repo-steward",
         "grok-bot-team-steward",
         "herdr",
+        "photo-retouch",
         "proxy-region-locale",
         "vscode-fullstack",
         "windows-dev-disk-cleanup",

@@ -116,6 +116,53 @@
         "prompt": "帮我激活grok-bot-team-steward但暂不导出",
         "expected_skill": "grok-bot-team-steward"
       }
+    ],
+    "design": [
+      {
+        "id": "design-route-1",
+        "prompt": "把这张旅游照右后方的游客去掉，保留我和左边的同伴",
+        "expected_skill": "photo-retouch"
+      },
+      {
+        "id": "design-route-2",
+        "prompt": "给这张自拍自然美颜，肤色均匀一点，不要改脸型",
+        "expected_skill": "photo-retouch"
+      },
+      {
+        "id": "design-route-3",
+        "prompt": "只写提示词，把我的景点照片做成水彩旅行明信片",
+        "expected_skill": "photo-retouch"
+      },
+      {
+        "id": "design-route-4",
+        "prompt": "没有参考图，凭空生成一幅太空城市插画",
+        "expected_skill": null
+      },
+      {
+        "id": "design-route-5",
+        "prompt": "修改项目现有 SVG 图标的描边颜色",
+        "expected_skill": null
+      },
+      {
+        "id": "design-route-6",
+        "prompt": "把这张自拍做成蓝底证件照，人和脸都不要变",
+        "expected_skill": "photo-retouch"
+      },
+      {
+        "id": "design-route-7",
+        "prompt": "把这张产品照片做成白底电商主图，包装上的字不要改",
+        "expected_skill": "photo-retouch"
+      },
+      {
+        "id": "design-route-8",
+        "prompt": "修复这张老照片的折痕，并按年代适度上色，不要改五官",
+        "expected_skill": "photo-retouch"
+      },
+      {
+        "id": "design-route-9",
+        "prompt": "没有产品照片，帮我设计一个全新品牌的包装",
+        "expected_skill": null
+      }
     ]
   },
   "execution": {
@@ -213,6 +260,68 @@
         "id": "automation-behavior-7",
         "prompt": "snapshot模板目录只有bots/_SLUG，缺meta/COMPLETED.md",
         "expectation": "结构校验返回非0，不能报告恢复就绪"
+      }
+    ],
+    "design": [
+      {
+        "id": "design-behavior-1",
+        "prompt": "用户要求轻度美颜；原图有雀斑，脸型自然，未要求换发型或瘦脸",
+        "expectation": "仅修饰可见小瑕疵，保留雀斑等辨识特征、脸型、年龄感、原发型与皮肤纹理，不自动重塑五官"
+      },
+      {
+        "id": "design-behavior-2",
+        "prompt": "文章中只有文字占位“图片”，用户要求直接把里面的游客修掉",
+        "expectation": "识别未收到实际原图，请求必要图片；可给模板但不声称已查看或生成成片"
+      },
+      {
+        "id": "design-behavior-3",
+        "prompt": "一张行李箱底图与11张旅行参考都已收到，但当前编辑工具一次最多接收5张图",
+        "expectation": "保留全部参考映射，采用可用的分批提取/汇总流程或说明能力缺口，不默默丢图；最终逐项核对11张独立贴纸"
+      },
+      {
+        "id": "design-behavior-4",
+        "prompt": "用户要求清除游客并保证其他区域逐像素不变；当前工具无蒙版或局部回贴能力，第一次出图也改变了人物的脸",
+        "expectation": "不承诺逐像素一致；发现人物漂移，回到原图缩小修改范围并重试，连续两次无改善时保留最佳版本并报告缺陷"
+      },
+      {
+        "id": "design-behavior-5",
+        "prompt": "用户要将人物景点照变成四头身拍立得黏土公仔，且保持人物和地标可辨认",
+        "expectation": "选择创意重构，明确四头身与人物/地标辨识度，允许全图风格与版式变化，不附加整张照片完全不变的冲突指令"
+      },
+      {
+        "id": "design-behavior-6",
+        "prompt": "当前没有可调用图像编辑工具，用户希望修好图片，并保证使用文中所称版本输出4K",
+        "expectation": "如实说明只能提供完整编辑提示词与素材顺序，不伪造成片、模型版本或4K输出，不强制安装工具"
+      },
+      {
+        "id": "design-behavior-7",
+        "prompt": "只要提示词，把左边第一把椅子变成白色Chair文字，把椅上的猫玩偶变成棕色Cat文字",
+        "expectation": "不调用出图；目标、单词和颜色逐项对应，字形构成物体并镂空显出场景背景，不能只在原物体上贴字，也不要求整图透明通道"
+      },
+      {
+        "id": "design-behavior-8",
+        "prompt": "用户已提供照片并要求去游客加自动调光，目标清楚；出图工具可用且支持参考图",
+        "expectation": "直接携带原图执行，不重复确认；分别指定背景删除区与全局影调调整，保留人物与几何结构；查看实际结果并提供成片，不止于建议或提示词"
+      },
+      {
+        "id": "design-behavior-9",
+        "prompt": "用户要求蓝底证件照并换成白衬衫，没有要求美颜；脸上有痣",
+        "expectation": "只换蓝底、胸像裁切和白衬衫；保留痣、脸型、年龄和肤色纹理，不自动磨皮、美白或改五官"
+      },
+      {
+        "id": "design-behavior-10",
+        "prompt": "老照片有折痕和缺角，用户只说修复，没有要求上色或变成现代照片",
+        "expectation": "只处理可见损坏，不发明缺失内容，不称为恢复原貌；不上色，不把服装和画面改成现代风格"
+      },
+      {
+        "id": "design-behavior-11",
+        "prompt": "白底商品主图，瓶子标签有原有文字，画面里共两瓶",
+        "expectation": "锁定标签原文、颜色、瓶形和两件数量；不新增文案、道具或额外商品"
+      },
+      {
+        "id": "design-behavior-12",
+        "prompt": "同一张景点照片，先做成水彩明信片，再另做一张港风直闪且必须仍是照片",
+        "expectation": "两件分开处理：明信片用旅行创意的水彩模板，允许插画和版式变化；港风用摄影调色的直闪特征并保持照片介质。不把直闪写进明信片，也不把水彩模板用于港风"
       }
     ]
   }

@@ -1,0 +1,4 @@
+interface:
+  display_name: "照片精准编辑与美化"
+  short_description: "精准局部修图、证件照与商品图、照片修复调色和旅行社媒创意，保留主体辨识度"
+  default_prompt: "使用 $photo-retouch 编辑我提供的照片，按我的要求调整指定区域，保留人物辨识度与其他重要细节，并交付检查后的图片。"

@@ -13,6 +13,7 @@
 | 机器优化 `system` | [proxy-region-locale](skills/system/proxy-region-locale/SKILL.md) | 按代理出口配置 Ubuntu 区域，保留用户偏好与回滚记录 |
 | 智能体与自动化 `automation` | [herdr](skills/automation/herdr/SKILL.md) | Herdr 托管环境中的终端与智能体协作 |
 | 智能体与自动化 `automation` | [grok-bot-team-steward](skills/automation/grok-bot-team-steward/SKILL.md) | Grok Bot 团队快照、恢复、对比与显式管家设置 |
+| 图像与设计 `design` | [photo-retouch](skills/design/photo-retouch/SKILL.md) | 已有照片的精准修图、证件照、商品图、修复调色与 12 种旅行社媒创意 |
 | 人生与文章写作 `writing` | 待扩展 | 预留分类，目前没有可安装技能 |
 
 分类是源码组织与展示信息，不属于技能名称。原来的 `--skill herdr`、`$herdr` 等调用不变；分类目录没有 `SKILL.md`，不会被安装为技能。技能内部的快照模板也不属于可安装项。
@@ -75,6 +76,7 @@ skills/
   coding/<skill-name>/
   system/<skill-name>/
   automation/<skill-name>/
+  design/<skill-name>/
   writing/.gitkeep
 ```
 
