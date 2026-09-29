@@ -77,7 +77,7 @@
       {
         "id": "system-route-6",
         "prompt": "按代理城市配置这台Windows的时区",
-        "expected_skill": null
+        "expected_skill": "proxy-region-locale"
       },
       {
         "id": "system-route-7",
@@ -216,7 +216,7 @@
       },
       {
         "id": "system-behavior-5",
-        "prompt": "Ubuntu无图形会话，且已有上次回滚记录，执行第二次区域设置",
+        "prompt": "无图形会话，且已有上次回滚记录，执行第二次区域设置",
         "expectation": "保留旧记录，新建唯一回滚；跳过无会话桌面操作"
       },
       {

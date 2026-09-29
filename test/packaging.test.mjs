@@ -27,7 +27,9 @@ test("npm package contains eight categorized skills and no Python caches", () =>
   const paths = pkg.files.map((file) => file.path);
   assert.equal(paths.filter((path) => /^skills\/[^/]+\/[^/]+\/SKILL\.md$/.test(path)).length, 8);
   assert.ok(paths.includes("skills/automation/grok-bot-team-steward/templates/snapshot/skills/_SKILL/SKILL.md"));
-  assert.ok(paths.includes("skills/system/proxy-region-locale/references/ubuntu-region.md"));
+  for (const platform of ["linux", "macos", "windows"]) {
+    assert.ok(paths.includes(`skills/system/proxy-region-locale/references/${platform}.md`));
+  }
   for (const resource of [
     "agents/openai.yaml",
     "references/basic-retouch.md",

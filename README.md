@@ -10,7 +10,7 @@
 | 代码开发 `coding` | [github-repo-steward](skills/coding/github-repo-steward/SKILL.md) | GitHub 个人仓库与星标盘点、生命周期和权限诊断 |
 | 代码开发 `coding` | [vscode-fullstack](skills/coding/vscode-fullstack/SKILL.md) | 当前 VS Code/Remote Profile 的全栈扩展与 JSONC 设置 |
 | 机器优化 `system` | [windows-dev-disk-cleanup](skills/system/windows-dev-disk-cleanup/SKILL.md) | Windows 开发机空间审计、具名授权清理与验收 |
-| 机器优化 `system` | [proxy-region-locale](skills/system/proxy-region-locale/SKILL.md) | 按代理出口配置 Ubuntu 区域，保留用户偏好与回滚记录 |
+| 机器优化 `system` | [proxy-region-locale](skills/system/proxy-region-locale/SKILL.md) | 按指定地点或代理出口修改 Mac、Windows、Linux 的时区与区域，并保留回滚 |
 | 智能体与自动化 `automation` | [herdr](skills/automation/herdr/SKILL.md) | Herdr 托管环境中的终端与智能体协作 |
 | 智能体与自动化 `automation` | [grok-bot-team-steward](skills/automation/grok-bot-team-steward/SKILL.md) | Grok Bot 团队快照、恢复、对比与显式管家设置 |
 | 图像与设计 `design` | [photo-retouch](skills/design/photo-retouch/SKILL.md) | 已有照片的精准修图、证件照、商品图、修复调色与 12 种旅行社媒创意 |
@@ -65,7 +65,7 @@ npx skills@1.5.26 add NAMEWTA/wta-skills-hub --skill herdr -g -a codex
 - Herdr 必须处于 `HERDR_ENV=1`。既定且已授权的 WTA Herdr 环境保留 Grok `--permission-mode bypassPermissions` 与 Codex `--dangerously-bypass-approvals-and-sandbox` 启动约定；其他环境不自动继承授权，用户指定受限模式时优先遵从。
 - GitHub/Gitea 修改操作沿用用户对具体目标及动作的授权；权限诊断不写入。工具看不到或没有验证的结果应明确报告。
 - Windows 清理保留候选清单和决策历史；不删除活动智能体运行时、不强制处理被锁文件。
-- Ubuntu 区域设置按用户要求的字段修改，每轮独立保留回滚记录；不会因改变区域而自动更换 NTP 源。
+- Mac、Windows 和 Linux 的时区与区域按用户要求的字段修改，每轮独立保留回滚记录；不会因改变区域而自动更换 NTP 源。
 - VS Code 设置按 JSONC 增量修改。默认 Profile 与命名 Profile 分别定位；Remote 扩展不声称已经经 Settings Sync 同步。
 - Grok 仅加载技能或本地比较快照不修改账号；恢复 routines 始终先建成暂停。快照结构校验不能证明内容真实、完整或已彻底脱敏。
 

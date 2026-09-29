@@ -7,7 +7,7 @@
 | 方法 | 在本项目中的应用 | 来源 |
 |---|---|---|
 | 从真实任务和失败出发 | 保留已有平台知识、团队约定，优先修正基线暴露的缺陷 | [Agent Skills 最佳实践](https://agentskills.io/skill-creation/best-practices) |
-| 描述专注触发条件 | 区分 Gitea/GitHub、开发与编辑器配置、Windows 清理与 Ubuntu 区域设置 | [OpenAI 技能指南](https://learn.chatgpt.com/docs/build-skills) |
+| 描述专注触发条件 | 区分 Gitea/GitHub、开发与编辑器配置、Windows 清理与跨平台时区及区域 | [OpenAI 技能指南](https://learn.chatgpt.com/docs/build-skills) |
 | 分层加载 | Herdr 操作细节分任务存放；Grok 按 activate/setup/snapshot/restore/diff 选择流程 | [OpenAI 关于技能上下文的建议](https://developers.openai.com/blog/rethinking-skills-and-prompts-for-gpt-6-astra) |
 | 指令精度匹配任务风险 | 开放式任务保留判断空间；分页、快照校验、权限和活动运行时保护使用明确约束 | [openai/skills 的 skill-creator](https://github.com/openai/skills/blob/main/skills/.system/skill-creator/SKILL.md) |
 | 评估后迭代 | 固定选择与行为样例，独立评估新旧版本，实际脚本结果与推演分开记录 | [OpenAI Skills Evals](https://developers.openai.com/blog/eval-skills)、[Anthropic skill-creator](https://github.com/anthropics/skills/blob/main/skills/skill-creator/SKILL.md) |
