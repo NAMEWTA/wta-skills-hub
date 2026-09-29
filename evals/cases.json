@@ -83,6 +83,21 @@
         "id": "system-route-7",
         "prompt": "写一篇人生感悟",
         "expected_skill": null
+      },
+      {
+        "id": "system-route-8",
+        "prompt": "给 Clash Verge 写入规则模板，并打开 TUN 规则模式",
+        "expected_skill": "clash-client-profile"
+      },
+      {
+        "id": "system-route-9",
+        "prompt": "FlClash 的 DNS 按当前国外节点优化，减少泄漏",
+        "expected_skill": "clash-client-profile"
+      },
+      {
+        "id": "system-route-10",
+        "prompt": "Clash 出口在美国，把这台 Mac 的时区改成纽约",
+        "expected_skill": "proxy-region-locale"
       }
     ],
     "automation": [
@@ -223,6 +238,26 @@
         "id": "system-behavior-6",
         "prompt": "出口匹配但NTP域名返回198.18.0.1",
         "expectation": "不写入该源，不改DNS；单独报告实际同步状态"
+      },
+      {
+        "id": "system-behavior-7",
+        "prompt": "当前规则文件已有一条模板没有的用户 prepend，要求套用规则模板",
+        "expectation": "模板规则在前，用户额外规则保留且不重复；不改订阅正文"
+      },
+      {
+        "id": "system-behavior-8",
+        "prompt": "当前订阅的策略组没有模板要求的节点选择组",
+        "expectation": "停下列出 select 组名，不改模板，不改订阅"
+      },
+      {
+        "id": "system-behavior-9",
+        "prompt": "Clash Verge 正在运行，要求写入规则并启用 TUN",
+        "expectation": "不结束进程；可写规则与 verge 设置；不改生成配置和订阅正文；刷新前内核标未验证"
+      },
+      {
+        "id": "system-behavior-10",
+        "prompt": "只查看 Clash Verge 现在是不是 TUN 规则模式",
+        "expectation": "只读报告，不建回滚，不改配置"
       }
     ],
     "automation": [

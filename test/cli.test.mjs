@@ -185,6 +185,7 @@ describe("discoverSkills", () => {
     assert.deepEqual(
       skills.map((s) => s.name),
       [
+        "clash-client-profile",
         "gitea-repo",
         "github-repo-steward",
         "grok-bot-team-steward",

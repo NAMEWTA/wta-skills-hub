@@ -16,7 +16,7 @@ function findPackage(value) {
   return null;
 }
 
-test("npm package contains eight categorized skills and no Python caches", () => {
+test("npm package contains nine categorized skills and no Python caches", () => {
   // npm_execpath is a JavaScript CLI entrypoint, avoiding .cmd shell differences.
   const npmCli = process.env.npm_execpath;
   assert.ok(npmCli, "run packaging tests via npm test");
@@ -25,7 +25,16 @@ test("npm package contains eight categorized skills and no Python caches", () =>
   const pkg = findPackage(JSON.parse(result.stdout));
   assert.ok(pkg, "supported npm pack JSON shape");
   const paths = pkg.files.map((file) => file.path);
-  assert.equal(paths.filter((path) => /^skills\/[^/]+\/[^/]+\/SKILL\.md$/.test(path)).length, 8);
+  assert.equal(paths.filter((path) => /^skills\/[^/]+\/[^/]+\/SKILL\.md$/.test(path)).length, 9);
+  for (const resource of [
+    "agents/openai.yaml",
+    "templates/ai-rules.yaml",
+    "templates/dns.yaml",
+    "references/clash-verge.md",
+    "references/flclash.md",
+  ]) {
+    assert.ok(paths.includes(`skills/system/clash-client-profile/${resource}`));
+  }
   assert.ok(paths.includes("skills/automation/grok-bot-team-steward/templates/snapshot/skills/_SKILL/SKILL.md"));
   for (const platform of ["linux", "macos", "windows"]) {
     assert.ok(paths.includes(`skills/system/proxy-region-locale/references/${platform}.md`));
