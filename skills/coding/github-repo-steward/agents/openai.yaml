@@ -1,4 +1,4 @@
 interface:
   display_name: "GitHub 仓库管家"
-  short_description: "盘点个人 GitHub 仓库与星标，按授权整理仓库生命周期"
-  default_prompt: "使用 $github-repo-steward，完成我指定的任务并报告验证结果。"
+  short_description: "只读盘点和权限诊断，具名管理仓库与 star，保留授权边界并如实报告未验证项"
+  default_prompt: "使用 $github-repo-steward 处理当前请求；先确认目标和范围，报告证据与未验证项。"

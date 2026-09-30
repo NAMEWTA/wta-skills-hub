@@ -1,4 +1,4 @@
 interface:
-  display_name: "VS Code 全栈 Profile"
-  short_description: "为目标 VS Code Profile 配置全栈开发并保留已有设置"
-  default_prompt: "使用 $vscode-fullstack 配置当前 VS Code Profile，补齐 Python、Vue、React、Go 的扩展和设置，并保留已有语言配置。"
+  display_name: "VS Code 全栈环境"
+  short_description: "确认本机或 Remote Profile 后增量配置扩展与 JSONC"
+  default_prompt: "使用 $vscode-fullstack 处理当前请求；先确认目标和范围，报告证据与未验证项。"

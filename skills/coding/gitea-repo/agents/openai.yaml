@@ -1,4 +1,4 @@
 interface:
-  display_name: "Gitea 仓库 API"
-  short_description: "管理 Gitea 与 Forgejo 的仓库资源、议题及拉取请求"
-  default_prompt: "Use $gitea-repo to talk to the Gitea or Forgejo HTTP API (issues, PRs, comments, labels, releases) instead of gh. Do not use this skill for GitHub.com."
+  display_name: "Gitea / Forgejo 仓库"
+  short_description: "定位实例、分页查询与受控 API 修改，保留授权边界并如实报告未验证项"
+  default_prompt: "使用 $gitea-repo 处理当前请求；先确认目标和范围，报告证据与未验证项。"

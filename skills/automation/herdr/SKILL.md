@@ -1,44 +1,34 @@
 ---
 name: herdr
-description: "控制 Herdr 的窗格、标签页、工作区和已识别智能体。仅在用户明确提及 Herdr 或要求通过 Herdr 控制终端时使用；不因任务适合后台或并行而启用。"
+description: "控制 Herdr 的窗格、标签页、工作区和已识别 Agent。仅用户明确提及 Herdr 或要求通过 Herdr 控制终端时使用；不因任务适合后台或并行而自动启用。"
 license: MIT
 ---
 
 # Herdr
 
-环境要求：必须在 HERDR_ENV=1 的 Herdr 托管窗格中，并有可用 herdr CLI。
-
-只控制用户任务所需的终端对象。先确认本智能体处在 Herdr 托管环境：
+必须处在 HERDR_ENV=1 的托管环境且 CLI 可用；环境标记不是额外权限。先核实所在主机/session，不能从外部接管 UI 聚焦窗口。
 
 ```bash
 test "${HERDR_ENV:-}" = 1
+herdr --help
 ```
 
-失败即停止，不从外部访问 UI 当前聚焦会话。通过后运行 `herdr --help`，仅查询当前任务相关命令组的帮助；裸 `herdr` 会启动/附着 TUI，不能用来发现能力。
+原生 PowerShell 使用对应环境变量判断，不照搬 POSIX test。版本不支持的平台/命令就停止；裸 herdr 会启动/附着 TUI，不能当能力发现命令。
 
-## 目标与工作流
+## 目标与按需工作流
 
-- 使用 `--current`、实际响应返回的 pane ID 或唯一在线 agent 名称，不依赖 UI 焦点或示例 ID。移动 pane 后重读新 ID。
-- 先看 workspace/pane/agent 的实际状态。ID 只在一台 server 中有效；远程目标须在目标主机对应 session 重新发现。[CLI 与目标语义](references/cli-and-targets.md)
-- 启动或向智能体提交任务时读 [智能体工作流](references/agents.md)。默认保留当前 cwd、tab 与用户焦点，按窗格尺寸和用户指定方向拆分。
-- 普通 shell 命令及输出读取使用 [pane 工作流](references/panes.md)。pane 成功接收输入不等于任务成功。
-- 关闭、移动、worktree、远程机器或版本兼容问题先读 [协调边界](references/safety.md)。
+先读实际 workspace/pane/agent 状态；使用 --current、返回的 pane ID 或唯一在线 agent 名。移动后重新读取 ID，不依赖 UI 焦点、示例 ID 或其他主机的 ID。
 
-## WTA 启动约定
+[CLI 与目标](references/cli-and-targets.md)、[Agent 工作流](references/agents.md)、[Pane 工作流](references/panes.md)、[协调边界](references/safety.md) 按任务读取。默认保留 cwd、tab、用户焦点，按实际尺寸和用户方向分屏。
 
-仅在本仓库既定、已授权的 WTA Herdr 工作环境，Grok/Codex 默认启动参数如下：
+## 权限与并发
 
-```bash
-herdr agent start coder --kind grok --pane <returned-pane-id> -- --permission-mode bypassPermissions
-herdr agent start reviewer --kind codex --pane <returned-pane-id> -- --dangerously-bypass-approvals-and-sandbox
-```
+沿用宿主当前权限。历史 WTA 启动约定中的 bypassPermissions / dangerously-bypass-approvals-and-sandbox 不是自动授权：只有当前用户明确批准该具体环境、目标和运行方式，且宿主允许时才可使用；不为消除 blocked 而扩大权限。用户指定受限模式始终优先。
 
-这不是其他机器的通用授权。用户指定受限/审批模式时优先遵从，且不得突破当前宿主权限；参数以安装版本的帮助为准。不要仅为消除 blocked 状态而扩大权限。
+多个 Agent 不同时修改同一文件或共享工作树中的重叠内容；先分配文件边界，确需隔离时使用经授权的独立 worktree。任务携带目标、验收和停止条件，不把父任务的授权无边界传递。实际 CLI 能力以当前 --help 为准，不编造后台接口。
 
-## 验收与停止
+## 完成与停止
 
-- prompt 超时或 stalled 时先 `agent get/read`，不能假设未送达并盲目重发。
-- `blocked` 先读取实际界面，依据现有授权处理；新的权限或重要决定交回用户。`unknown` 不是完成证据。
-- 结合状态和输出判断结果；输出因 alternate screen 截断时才让目标写临时结果文件，不要求所有任务默认写文件。
-- 不擅自关闭别人的 pane/session、不停止活动 server；实验使用独立命名测试 session。
-- 最终报告实际目标、已执行动作、观察到的结果和未完成事项，不将提交成功当作任务完成。
+prompt 超时/stalled 先 get/read，不盲重发导致重复操作；pane 接收输入不是任务成功。blocked 查实际需求，新权限决定交回用户；unknown 不是完成。输出截断才让目标写具名临时结果，不默认生成大量文件。
+
+不关闭别人的 pane/session、不停止活动 server、不取消其他任务。实验使用独立测试 session。最终报告目标、动作、状态/输出证据、文件变化与未完成事项；分派成功不能冒充工作完成。

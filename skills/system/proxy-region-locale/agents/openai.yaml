@@ -1,4 +1,4 @@
 interface:
-  display_name: "电脑时区与区域"
-  short_description: "按指定地点或代理出口修改时区、语言和区域，并保留回滚"
-  default_prompt: "使用 $proxy-region-locale。按我指定的地点，或按当前代理出口，修改这台电脑的时区、语言和区域格式。不要改代理或 DNS。"
+  display_name: "时区与区域"
+  short_description: "按字段修改跨平台时区语言，保留输入法与回滚，保留授权边界并如实报告未验证项"
+  default_prompt: "使用 $proxy-region-locale 处理当前请求；先确认目标和范围，报告证据与未验证项。"

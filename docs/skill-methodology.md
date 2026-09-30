@@ -1,42 +1,33 @@
 # Skill 创建、优化与迭代方法
 
-检索与核对日期：2026-09-26 至 2026-09-27。研究覆盖 OpenAI 官方资料、Agent Skills 规范、GitHub 官方仓库及公开可检索的 X 讨论；不声称穷尽互联网内容。
+## 本轮直接核对的规范
 
-## 采用的方法
+2026-09-29 通过 GitHub 连接器读取下列正文，记录 blob SHA（不是发布版本号；以下默认分支链接可能变化）。未使用通用网页或 X 检索。
 
-| 方法 | 在本项目中的应用 | 来源 |
+| 来源 | 核对内容 | 读取 blob SHA |
 |---|---|---|
-| 从真实任务和失败出发 | 保留已有平台知识、团队约定，优先修正基线暴露的缺陷 | [Agent Skills 最佳实践](https://agentskills.io/skill-creation/best-practices) |
-| 描述专注触发条件 | 区分 Gitea/GitHub、开发与编辑器配置、Windows 清理与跨平台时区及区域 | [OpenAI 技能指南](https://learn.chatgpt.com/docs/build-skills) |
-| 分层加载 | Herdr 操作细节分任务存放；Grok 按 activate/setup/snapshot/restore/diff 选择流程 | [OpenAI 关于技能上下文的建议](https://developers.openai.com/blog/rethinking-skills-and-prompts-for-gpt-6-astra) |
-| 指令精度匹配任务风险 | 开放式任务保留判断空间；分页、快照校验、权限和活动运行时保护使用明确约束 | [openai/skills 的 skill-creator](https://github.com/openai/skills/blob/main/skills/.system/skill-creator/SKILL.md) |
-| 评估后迭代 | 固定选择与行为样例，独立评估新旧版本，实际脚本结果与推演分开记录 | [OpenAI Skills Evals](https://developers.openai.com/blog/eval-skills)、[Anthropic skill-creator](https://github.com/anthropics/skills/blob/main/skills/skill-creator/SKILL.md) |
-| 遵守开放结构 | YAML 元数据、技能名与目录一致，脚本/资源随技能独立安装 | [Agent Skills 规范](https://agentskills.io/specification) |
+| [Agent Skills specification](https://github.com/agentskills/agentskills/blob/main/docs/specification.mdx) | 必填 name/description、名字/长度、可选 compatibility、独立资源、渐进加载 | d9a2db099d905da8b879a5c6f996728073985279 |
+| [OpenAI skill-creator](https://github.com/openai/skills/blob/main/skills/.system/skill-creator/SKILL.md) | 精简主体、按风险决定指令精度、scripts/references、UI metadata、避免重复 | 72bc0b97e7a6476254a9d5c424c9971748402ec3 |
+| [Anthropic skill-creator](https://github.com/anthropics/skills/blob/main/skills/skill-creator/SKILL.md) | 触发描述、真实测试、基线对照、迭代与逐步扩展评估 | 65b3a402dbd09b8e83f9d637c6b553875189085c |
 
-X 检索发现 [Dominik Kundel 关于 Skills/MCP 配合的帖子](https://x.com/dkundel/status/2018436269907603590) 与 [Axiom 关于 eval skill 的帖子](https://x.com/AxiomFM/status/2032110416625877465)。搜索索引返回了正文摘录，但直接打开失败；因此仅作为研究线索，未将社交帖中的效果宣称作为本项目的验收依据。
+Agent Skills 格式、具体消费方行为和本仓库约定是不同层。compatibility 是规范允许的可选字段，不能因为某个旧验证器不支持就称它不合规范；本仓库目前仍以正文声明依赖，避免引入不必要的消费者兼容变化。allowed-tools 不应视为跨宿主权限许可。
 
-没有套用所有技能都必须同样长、每次都读全部参考、每个动作都重新批准、所有任务都强制子智能体等规则。技能提供可复用的领域知识，并承接用户当前意图及已有授权。
+## 重构方法
 
-## 分类及安装事实
+从可观察失败开始：记录最小复现、任务范围和证据缺口；区分库自身缺陷、环境差异与服务端拒绝。先修危险默认值与错误验收，再补平台分支，不用更多关键词或更多正文掩盖问题。
 
-`skills/<category>/<name>` 采用五个分类：coding、system、automation、design、writing。design 用于照片编辑与视觉创意；分类不进入 skill name，安装选择参数继续兼容。
+name 稳定；description 说明真实触发场景及近邻排除；SKILL 主体保留决策和停止条件，平台/产品细节按需读 references。脚本负责重复且确定的逻辑，默认离线只读，参数/错误与输出可测试。所有运行资源随单个 skill 安装，维护文档不作为执行依赖。
 
-锁定的 [Vercel Skills v1.5.26 发现实现](https://github.com/vercel-labs/skills/blob/v1.5.26/src/skills.ts) 会遍历分类容器，并在发现技能包后停止向内扫描。本项目发现逻辑对齐此边界，避免模板里的 SKILL.md 成为独立技能。
+修改遵循读取 → 预览 → 具名授权 → 私有快照 → 版本校验 → 最小写入 → 运行时验证 → 必要时回滚。权限拒绝后不换底层路径绕过；历史团队约定不能替代当前宿主授权。
 
-[skills.sh 分组 schema](https://skills.sh/schemas/skills.sh.schema.json) 要求每组至少一个技能，因此 writing 只预留目录和展示说明，不写空 groupings 项。仓库目录校验与网站分组同步校验，但分组文件不改变安装参数。
+## 测试证据分层
 
-## 本轮改造依据
+结构校验验证元数据、链接与打包；单元测试验证脚本确定性和失败边界；跨平台 CI 验证运行兼容；真实设备验收验证产品行为；技能选择/行为评估验证 Agent 是否正确应用工作流。这些结果不能互相替代。
 
-- GitHub：权限诊断中的写探针与只读请求冲突，改用只读信息及实际授权操作的错误响应。布尔 API 字段使用 `-F`；90 天恢复存在条件，不能保证。[gh api](https://cli.github.com/manual/gh_api)、[仓库恢复条件](https://docs.github.com/en/repositories/creating-and-managing-repositories/restoring-a-deleted-repository)
-- Gitea：原标签名称解析只读 50 项，在 65 标签模拟场景失败；改为全量分页。后续独立评估又复现服务端较小分页上限造成早停，修正为取到空页、拒绝重复页，并移除静默 200 页截断。
-- VS Code：默认 Profile 不要求 userDataProfiles 条目；settings 是 JSONC，需保留注释和用户键；Remote 扩展同步有独立限制。[Profiles](https://code.visualstudio.com/docs/configure/profiles)、[JSONC](https://code.visualstudio.com/Docs/languages/json)
-- 系统技能：明确支持的平台与授权字段，保留原输入法和已有回滚记录；候选 NTP 源失败不等于全局同步失败。
-- 自动化技能：保留 Herdr 真实状态/目标语义与既定团队启动参数；明确 Grok 激活和本地 diff 的范围；结构脚本拒绝占位 Bot 与不完整完成标记。
+现有 evals 的历史记录保留。本轮新增场景覆盖正常、相邻不触发、未授权修改、未知版本、缺工具、网络命名空间、部分成功、回滚与不确定结果。没有运行独立 Agent 对照评估就不报告选择准确率提升。
 
-环境要求放在正文，元数据使用各消费方共同支持的字段；本机 skill-creator 的 quick_validate 尚不接受规范中可选的 compatibility 字段，移入正文后七项均通过校验。
+## 来源诚信与后续维护
 
-## 后续迭代
+本仓库先前方法文件中的网页/X 核验宣称属于历史提交，不自动继承为本轮事实；需要可复现正文后才采信。本轮排除了一份正文属于同名游戏数据项目的 Mihomo 检索返回，不能按 URL 外观引用。客户端 schema、CLI 支持域名、OS 私有偏好及服务地区政策需在部署版本重新核验。
 
-新技能从具体重复任务和样例开始；描述决定何时选用，正文决定怎么做，脚本负责确需确定性的操作。出现真实失败时先加入可观察场景，再做小范围修正，复测关联场景。新平台须补相应来源和实际或模拟验证，不将单台机器的经验提升成通用事实。
-
-结果与局限见 [验证记录](validation-results.md)。
+详见 [本轮审计与验证边界](refactor-audit.md)。更新来源时记录读取日期、身份匹配、版本、实际观察和局限，不把社区经验或单机结果提升为普遍保证。

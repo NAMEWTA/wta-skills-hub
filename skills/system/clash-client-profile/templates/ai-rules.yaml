@@ -1,139 +1,15 @@
-# 复制整段，替换原来的 prepend / append / delete。策略组：🔰 节点选择
-# 日期：2026-09-29
-#
-# DOMAIN-KEYWORD 比 DOMAIN-SUFFIX 更宽：域名任意位置出现这段文字就命中。
-# 品牌词用关键字。短词会误伤别的站，仍用后缀或精确域名，见文末那一组。
-#
-# 进程规则只在「这台电脑自己跑 Clash，并且开了 TUN」时生效。
-# 配置里需要：find-process-mode: always
-# 路由器上看不到本机进程名，那些流量靠后面的域名规则。
-# 进程规则要写在域名规则前面，软件启动时临时出现的新地址才会进同一节点，
-# 不会有一条走代理、一条直连，地区检测对不上。
-#
-# 进程名来自这台 Mac 上已安装的应用：
-# Claude.app、ChatGPT.app（包名是 com.openai.codex，桌面版 Codex）、
-# Cursor.app、Grok Bot.app，以及命令行 claude / codex / grok。
-# 不用 Cursor* 这种通配：系统进程 CursorUIViewService 会被一起带走。
-
+# Minimal domain baseline, not an exhaustive service allowlist.
 prepend:
-  # ===== 原有 7 条，顺序不动 =====
-  - 'DOMAIN-KEYWORD,microsoft,🔰 节点选择'
-  - 'DOMAIN-KEYWORD,chatgpt,🔰 节点选择'
-  - 'IP-CIDR,43.108.85.167/32,DIRECT'
-  - 'DOMAIN-KEYWORD,openai,🔰 节点选择'
-  - 'DOMAIN-KEYWORD,cursor,🔰 节点选择'
-  - 'DOMAIN-KEYWORD,anthropic,🔰 节点选择'
-  - 'DOMAIN-KEYWORD,claude,🔰 节点选择'
-
-  # ===== 本机进程：Claude / Codex / ChatGPT / Cursor / Grok =====
-  # 桌面应用整包。辅助进程（Helper、Renderer、GPU、Computer Use）都在包里
-  - 'PROCESS-PATH-WILDCARD,*Claude.app*,🔰 节点选择'
-  - 'PROCESS-PATH-WILDCARD,*ChatGPT.app*,🔰 节点选择'
-  - 'PROCESS-PATH-WILDCARD,*Cursor.app*,🔰 节点选择'
-  - 'PROCESS-PATH-WILDCARD,*Grok Bot.app*,🔰 节点选择'
-  # 命令行。macOS 上 Claude Code 的可执行文件名是 claude；Codex 桌面还会拉起 codex、codex-code-mode-host
-  - 'PROCESS-NAME-WILDCARD,claude*,🔰 节点选择'
-  - 'PROCESS-NAME-WILDCARD,Claude*,🔰 节点选择'
-  - 'PROCESS-NAME-WILDCARD,codex*,🔰 节点选择'
-  - 'PROCESS-NAME-WILDCARD,Codex*,🔰 节点选择'
-  - 'PROCESS-NAME,ChatGPT,🔰 节点选择'
-  - 'PROCESS-NAME,ChatGPT.exe,🔰 节点选择'
-  - 'PROCESS-NAME,grok,🔰 节点选择'
-  - 'PROCESS-NAME,grok.exe,🔰 节点选择'
-  - 'PROCESS-NAME-WILDCARD,Grok Bot*,🔰 节点选择'
-  - 'PROCESS-NAME,Cursor,🔰 节点选择'
-  - 'PROCESS-NAME,Cursor.exe,🔰 节点选择'
-  - 'PROCESS-NAME,Cursor Helper,🔰 节点选择'
-  - 'PROCESS-NAME,Cursor Helper (GPU),🔰 节点选择'
-  - 'PROCESS-NAME,Cursor Helper (Plugin),🔰 节点选择'
-  - 'PROCESS-NAME,Cursor Helper (Renderer),🔰 节点选择'
-  # npm / 原生安装路径。node 本身不匹配，避免所有 Node 程序都被带走
-  - 'PROCESS-PATH-WILDCARD,*claude-code*,🔰 节点选择'
-  - 'PROCESS-PATH-WILDCARD,*@openai/codex*,🔰 节点选择'
-  - 'PROCESS-PATH-WILDCARD,*@xai-official/grok*,🔰 节点选择'
-  - 'PROCESS-NAME,SkyComputerUseClient,🔰 节点选择'
-  - 'PROCESS-NAME,CUALockScreenGuardian,🔰 节点选择'
-
-  # ===== 关键字：品牌词，用来接住以后新出现的子域名 =====
-  # openai / chatgpt / claude / anthropic / cursor / microsoft 已在上面
-  - 'DOMAIN-KEYWORD,grok,🔰 节点选择'
-  - 'DOMAIN-KEYWORD,codex,🔰 节点选择'
-  - 'DOMAIN-KEYWORD,spacex,🔰 节点选择'
-  - 'DOMAIN-KEYWORD,oaistatic,🔰 节点选择'
-  - 'DOMAIN-KEYWORD,oaiusercontent,🔰 节点选择'
-  - 'DOMAIN-KEYWORD,oaistatsig,🔰 节点选择'
-  - 'DOMAIN-KEYWORD,crixet,🔰 节点选择'
-  - 'DOMAIN-KEYWORD,livekit,🔰 节点选择'
-  - 'DOMAIN-KEYWORD,statsig,🔰 节点选择'
-  - 'DOMAIN-KEYWORD,featuregates,🔰 节点选择'
-  - 'DOMAIN-KEYWORD,featureassets,🔰 节点选择'
-  - 'DOMAIN-KEYWORD,prodregistryv2,🔰 节点选择'
-  - 'DOMAIN-KEYWORD,sentry,🔰 节点选择'
-  - 'DOMAIN-KEYWORD,datadog,🔰 节点选择'
-  - 'DOMAIN-KEYWORD,arkoselabs,🔰 节点选择'
-  - 'DOMAIN-KEYWORD,funcaptcha,🔰 节点选择'
-  - 'DOMAIN-KEYWORD,workos,🔰 节点选择'
-  - 'DOMAIN-KEYWORD,intercom,🔰 节点选择'
-  - 'DOMAIN-KEYWORD,sendgrid,🔰 节点选择'
-  - 'DOMAIN-KEYWORD,github,🔰 节点选择'
-  - 'DOMAIN-KEYWORD,copilot,🔰 节点选择'
-  - 'DOMAIN-KEYWORD,exp-tas,🔰 节点选择'
-  - 'DOMAIN-KEYWORD,visualstudio,🔰 节点选择'
-  - 'DOMAIN-KEYWORD,vscode,🔰 节点选择'
-  - 'DOMAIN-KEYWORD,vsassets,🔰 节点选择'
-  - 'DOMAIN-KEYWORD,hockeyapp,🔰 节点选择'
-  - 'DOMAIN-KEYWORD,applicationinsights,🔰 节点选择'
-  - 'DOMAIN-KEYWORD,msecnd,🔰 节点选择'
-  - 'DOMAIN-KEYWORD,npmjs,🔰 节点选择'
-  - 'DOMAIN-KEYWORD,pypi,🔰 节点选择'
-  - 'DOMAIN-KEYWORD,pythonhosted,🔰 节点选择'
-  - 'DOMAIN-KEYWORD,anysphere,🔰 节点选择'
-  - 'DOMAIN-KEYWORD,vercel-storage,🔰 节点选择'
-  - 'DOMAIN-KEYWORD,msauth,🔰 节点选择'
-  - 'DOMAIN-KEYWORD,msftauth,🔰 节点选择'
-  - 'DOMAIN-KEYWORD,twitter,🔰 节点选择'
-  - 'DOMAIN-KEYWORD,twimg,🔰 节点选择'
-  - 'DOMAIN-KEYWORD,unpkg,🔰 节点选择'
-
-  # ===== 不能用关键字的主机：短词会命中无关域名 =====
-  # x.ai 会命中 box.ai、relax.ai；x.com 会命中 box.com；chat.com 会命中 wechat.com
-  # bing 会命中 tubing.com；sora 会命中 soracom；stripe 会命中 pinstripe
-  - 'DOMAIN-SUFFIX,x.ai,🔰 节点选择'
-  - 'DOMAIN-SUFFIX,spacex.ai,🔰 节点选择'
-  - 'DOMAIN-SUFFIX,x.com,🔰 节点选择'
-  - 'DOMAIN,t.co,🔰 节点选择'
-  - 'DOMAIN-SUFFIX,chat.com,🔰 节点选择'
-  - 'DOMAIN-SUFFIX,sora.com,🔰 节点选择'
-  - 'DOMAIN-SUFFIX,clau.de,🔰 节点选择'
-  - 'DOMAIN-SUFFIX,ddog-gov.com,🔰 节点选择'
-  - 'DOMAIN,challenges.cloudflare.com,🔰 节点选择'
-  - 'DOMAIN-SUFFIX,stripe.com,🔰 节点选择'
-  - 'DOMAIN-SUFFIX,stripe.network,🔰 节点选择'
-  - 'DOMAIN,humb.apple.com,🔰 节点选择'
-  - 'DOMAIN-SUFFIX,bing.com,🔰 节点选择'
-  - 'DOMAIN-SUFFIX,bingapis.com,🔰 节点选择'
-  - 'DOMAIN,substrate.office.com,🔰 节点选择'
-  - 'DOMAIN,login.live.com,🔰 节点选择'
-  - 'DOMAIN,account.live.com,🔰 节点选择'
-  - 'DOMAIN,login.windows.net,🔰 节点选择'
-  - 'DOMAIN-SUFFIX,cognitiveservices.azure.com,🔰 节点选择'
-  - 'DOMAIN-SUFFIX,services.ai.azure.com,🔰 节点选择'
-  - 'DOMAIN-SUFFIX,ai.azure.com,🔰 节点选择'
-  - 'DOMAIN-SUFFIX,oai.azure.com,🔰 节点选择'
-  - 'DOMAIN,storage.googleapis.com,🔰 节点选择'
-  - 'DOMAIN-SUFFIX,brew.sh,🔰 节点选择'
-  - 'DOMAIN,fonts.googleapis.com,🔰 节点选择'
-  - 'DOMAIN,fonts.gstatic.com,🔰 节点选择'
-  - 'DOMAIN,cdnjs.cloudflare.com,🔰 节点选择'
-  - 'DOMAIN,cdn.jsdelivr.net,🔰 节点选择'
-  - 'DOMAIN,cdn.tailwindcss.com,🔰 节点选择'
-  - 'DOMAIN,code.jquery.com,🔰 节点选择'
-  - 'DOMAIN,cloud-agent-artifacts.s3.us-east-1.amazonaws.com,🔰 节点选择'
-  - 'DOMAIN,accounts.google.com,🔰 节点选择'
-  - 'DOMAIN,oauth2.googleapis.com,🔰 节点选择'
-  - 'DOMAIN,www.googleapis.com,🔰 节点选择'
-  - 'DOMAIN,appleid.apple.com,🔰 节点选择'
-  - 'DOMAIN,idmsa.apple.com,🔰 节点选择'
-
+  - "DOMAIN-SUFFIX,anthropic.com,🔰 节点选择"
+  - "DOMAIN-SUFFIX,claude.ai,🔰 节点选择"
+  - "DOMAIN-SUFFIX,claude.com,🔰 节点选择"
+  - "DOMAIN-SUFFIX,openai.com,🔰 节点选择"
+  - "DOMAIN-SUFFIX,chatgpt.com,🔰 节点选择"
+  - "DOMAIN-SUFFIX,oaistatic.com,🔰 节点选择"
+  - "DOMAIN-SUFFIX,oaiusercontent.com,🔰 节点选择"
+  - "DOMAIN-SUFFIX,cursor.com,🔰 节点选择"
+  - "DOMAIN-SUFFIX,cursor.sh,🔰 节点选择"
+  - "DOMAIN-SUFFIX,x.ai,🔰 节点选择"
+  - "DOMAIN-SUFFIX,grok.com,🔰 节点选择"
 append: []
 delete: []

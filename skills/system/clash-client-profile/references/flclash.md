@@ -1,50 +1,15 @@
-# FlClash
+# FlClash：禁止猜写持久化格式
 
-先退出客户端再写。进程还在时只报告路径和将要改的项，不写文件。
+候选目录包括 macOS 的 `~/Library/Application Support/FlClash` 与 `com.follow.clash`、Windows 对应 `%APPDATA%` 目录、Linux 的 XDG 配置目录。大小写、便携模式、版本和安装渠道会改变位置；使用 GUI/活动进程确认真实实例。
 
-按顺序找数据目录，用第一个同时有 `shared_preferences.json` 或 `database.sqlite` 的：
+旧实现见到 shared_preferences.json 或 database.sqlite，以及 currentProfileId、patchClashConfig、vpnProps、addedRules、standardOverwrite、overrideDns 等字段。这些只是历史线索，不是跨版本写入协议。无法验证具体字段含义、当前订阅与合并顺序时停止自动修改；不能只因列名像规则就向 SQLite 写入。
 
-| 系统 | 候选目录 |
-|---|---|
-| macOS | `~/Library/Application Support/FlClash`，然后 `~/Library/Application Support/com.follow.clash` |
-| Windows | `%APPDATA%\FlClash`，然后 `%APPDATA%\com.follow.clash` |
-| Linux | `~/.config/FlClash`，然后 `~/.config/com.follow.clash` |
+优先使用客户端支持的规则覆写导入与设置界面。离线改文件前要求用户正常退出并确认相关进程已停止；保留字节、权限、原先不存在状态。仅复制 SQLite 主文件可能遗漏 WAL：数据库备份须使用对应的事务一致性备份方式，或确认正常关闭及 checkpoint；不得删除 -wal/-shm 来强行“修复”。
 
-进程名包含 `FlClash` 或 `flclash` 时就是这个客户端。不要把它和 Clash Verge 的 `verge-mihomo` 算成同一个。
+不覆盖订阅、节点、密钥或现有脚本；字符串内嵌 JSON 也必须经版本验证后按原结构保存。原版 prepend/append/delete 不是可直接写入任意 addedRules 字段的数据格式。未知 delete 语义就保留并报告冲突，不能发明禁用字段。
 
-## 找到当前订阅
+规则模式、TUN、DNS override 分别设置并读回，保持已有 stack 与系统代理状态；不盲目关闭 IPv6、监听 53 或替换全部 DNS。无助手/权限时只诊断，不自动安装特权组件。
 
-从 `shared_preferences.json` 或数据库里读 `currentProfileId`，以及该配置的策略组名。组名核对方式与正文相同。订阅 YAML 只读组名，不写。
+重开后核对运行内核而非仅存储文件；检查单次目标连接对应规则及最终节点。多个覆写脚本的先后次序必须通过生成配置和实际连接验证。修改不生效或被覆写就恢复本轮改动，不循环竞写。
 
-配置 JSON 可能把整个配置再存成一段字符串。先解析外层；某个字符串值还能解析成带 `patchClashConfig` 的对象时，改那个对象，并按原来的形式写回（原来是字符串就继续存成字符串）。其他键保留。
-
-读不到 `currentProfileId` 或 `patchClashConfig` 时停，说明看到的顶层键，不新建一份配置。
-
-## 应用设置
-
-在 `patchClashConfig` 里写：
-
-- `mode: rule`
-- `ipv6: false`
-- `find-process-mode: always`
-- `tun.enable: true`
-- `tun.stack` 已有值就保留。没有时 macOS 和 Linux 写 `gvisor`，Windows 写 `mixed`。
-- `tun.dns-hijack` 缺少时补 `any:53` 和 `tcp://any:53`。
-
-`vpnProps` 已经存在时，把它的 `enable` 设为 true、`ipv6` 设为 false。没有 `vpnProps` 就不添加。
-
-DNS 写入 `patchClashConfig.dns`，键和值来自 [templates/dns.yaml](../templates/dns.yaml)，并设 `overrideDns: true`，这样界面 DNS 使用这份内容。已有覆写脚本时不要删脚本；在报告里说明开启 DNS 覆写后，脚本写的 DNS 会被这份内容替换。
-
-不改端口、订阅地址和节点。
-
-## 规则放在覆写里
-
-模板的 `prepend` / `append` / `delete` 不要写进订阅 YAML。
-
-先找已经存在、且含有 `addedRules` 或 `standardOverwrite` 的 JSON。规则是字符串，或对象里有一条规则文本时，按正文的合并方式写入 `addedRules`：模板顺序在前，用户多出来的规则在后。`delete` 里的规则从覆写列表去掉，并记入该版本已有的禁用或删除字段；没有这样的字段就停，不要另造字段名。
-
-只有 `database.sqlite` 时，先只读列出表名和列名。某列明确保存规则文本时才合并进该列。列名对不上就停，报告表名，不导出含有订阅地址的行，也不猜着写。
-
-## 核对
-
-写完后读回 `mode`、`tun.enable`、`ipv6`、`find-process-mode`、`overrideDns` 和合并后的覆写规则。客户端尚未重新打开时，运行中的内核标成未验证。
+所有诊断、DNS/IPv6 与 crash 验收按主入口的诊断参考执行；该参考不承诺某一版本的内部 schema。
