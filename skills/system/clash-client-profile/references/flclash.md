@@ -13,3 +13,12 @@
 重开后核对运行内核而非仅存储文件；检查单次目标连接对应规则及最终节点。多个覆写脚本的先后次序必须通过生成配置和实际连接验证。修改不生效或被覆写就恢复本轮改动，不循环竞写。
 
 所有诊断、DNS/IPv6 与 crash 验收按主入口的诊断参考执行；该参考不承诺某一版本的内部 schema。
+
+
+## 本轮 DNS 计划的接入
+
+按 [DNS 工作流](dns-workflow.md) 生成候选，只在本版本实际支持的规则/覆写/DNS 管理层应用。`candidate_fragment` 不是订阅全文；`rules_extension` 与内核 `dns`/`tun` 是不同产物，不放错层。现有 DNS 策略 map 要经批准替换；递归 Merge 的空对象可能保留旧策略，不能只看导入成功。
+
+先在私有目录保存原状态，确认 schema 和各覆写层的执行顺序，使用隔离完整候选检查。读回最终生成配置后再跑 audit，尤其检查 nameserver-policy、proxy-server-nameserver-policy、fallback、direct-nameserver 和 URL 的代理组后缀没有被 GUI 删除/还原。未知格式仅交付 GUI 操作计划，不写 SQLite 或 臆造字段。
+
+不因为启用 TUN 就关闭旧系统代理；不得替用户改节点密码、subscription URL、DNS 监听端口或系统区域。原生系统 DNS/IPv6 与浏览器更改读对应参考并分阶段实施，失败按 [事务与验收](acceptance.md) 停止/回滚。DNS 测试通过不能替代真实 Claude Code 连接链和服务响应。

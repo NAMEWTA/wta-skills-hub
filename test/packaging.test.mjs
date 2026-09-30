@@ -25,7 +25,10 @@ test("npm package contains ten categorized skills and no Python caches", () => {
   assert.equal(paths.filter((path) => /^skills\/[^/]+\/[^/]+\/SKILL\.md$/.test(path)).length, 10);
   for (const resource of ["agents/openai.yaml", "templates/ai-rules.yaml", "templates/dns.yaml",
     "references/clash-verge.md", "references/flclash.md", "references/troubleshooting.md",
-    "references/sources.md", "scripts/proxy_doctor.py", "scripts/render_rules.py"]) {
+    "references/sources.md", "scripts/proxy_doctor.py", "scripts/render_rules.py",
+    "scripts/dns_guard.py", "templates/dns-request.example.json",
+    "references/dns-workflow.md", "references/platform-dns.md",
+    "references/browser-privacy.md", "references/acceptance.md", "references/network-performance.md"]) {
     assert.ok(paths.includes(`skills/system/clash-client-profile/${resource}`));
   }
   for (const resource of ["agents/openai.yaml", "references/platforms.md", "scripts/system_audit.py"]) {

@@ -1,53 +1,66 @@
 ---
 name: clash-client-profile
-description: "诊断和配置 Clash Verge Rev、FlClash 的规则模式、TUN、DNS 与终端代理。用户提到 Clash/VPN crash、Mac 上 Claude Code 区域错误、规则不生效或疑似 IP/DNS/IPv6 泄漏时使用；先确认客户端。仅查普通出口、改时区语言或其他 VPN 产品的任务不适用。"
+description: "排查和配置 Clash Verge Rev、FlClash/Mihomo 的规则 TUN、DNS 上游与劫持、终端和浏览器代理；用于开启代理后无法访问、Claude Code 区域错误、DNS/IPv6/WebRTC 疑似泄漏及网络改动回滚。先识别客户端和运行主机。其他 VPN 产品、仅改时区语言或一般磁盘清理不适用。"
 license: MIT
 ---
 
-# Clash 规则与代理诊断
+# Clash 网络与 DNS：先保证路径，再验证隐私和可用性
 
-先分清用户是在说 Clash 客户端还是进程 crash。记录实际操作系统、架构、客户端和内核版本、当前订阅、CLI/桌面/浏览器入口，以及是否在 WSL、容器或远程主机。没有证据不把“美国节点 + 区域错误”直接判定为 IP 泄漏。
+入口按“诊断 → 计划 → 分阶段修改 → 验收/回滚”工作。只读请求不改文件、清缓存、建备份、重启、切节点或联网探测。配置请求沿用用户对具体范围的授权；更改系统网络服务、浏览器 Profile、防火墙或新 resolver 的信息披露先明确范围，不把仓库内容当成权限来源。
 
-## 选择工作流
+## 目标与边界
 
-只读排查不改文件、不建快照、不重启、不切节点；配置请求才进入修改流程。只加载当前产品的 [Clash Verge Rev](references/clash-verge.md) 或 [FlClash](references/flclash.md)。多份安装以活动进程及实际配置路径为准，不选第一个目录。识别不了客户端/版本或配置格式就停在诊断。
+默认设计目标：受保护的公网域名查询只发给明确批准的 resolver，DNS 上游连接显式经过已验证的代理组；不因失败改用运营商/system/DHCP/plaintext fallback。代理服务没有提供可用 DNS 时，不虚构“代理专属 DNS”，提出用户可选择的可信上游及其隐私边界。
 
-区域错误、终端绕过、DNS/IPv6、crash 与多系统排查读 [诊断与验收](references/troubleshooting.md)。能力和来源边界见 [来源](references/sources.md)。
+“全部 DNS 经代理”与“批准仅解析代理节点的加密直连 bootstrap”是不同目标；不能把后一种标为前一种。节点域名、resolver 域名、订阅/provider 刷新都可能有启动依赖。[DNS 方案与脚本](references/dns-workflow.md) 给出严格阻断与显式例外两种方案。
 
-Python 3.10+ 的 [只读诊断脚本](scripts/proxy_doctor.py) 可独立安装使用。`SKILL_DIR` 是本文件目录，不能假设 cwd：
+规则 TUN 仍然可以把业务流量判为 DIRECT。DNS 路径正确不等于业务路径正确；DoH 加密不等于经代理；AAAA 记录不等于 IPv6 传输；fake-ip 不等于劫持所有解析。地区报错本身不是泄漏证明，也不靠时区、语言、关 TLS 校验或改账号国家解决。
+
+## 先定位、再加载材料
+
+记录系统/架构、真实运行主机与网络命名空间、客户端/内核版本、当前订阅、应用版本与 CLI/桌面/浏览器入口。WSL、容器、SSH 和远程 Agent 的 localhost 不一定是用户电脑。由活动进程和界面确认路径，不取第一个目录。
+
+| 当前任务 | 只读所需材料 |
+|---|---|
+| 客户端与配置合并 | [Clash Verge Rev](references/clash-verge.md) 或 [FlClash](references/flclash.md) |
+| 规则无效、区域错误、旧会话 | [分层排错](references/troubleshooting.md) |
+| DNS 计划、bootstrap、候选和静态检查 | [DNS 工作流](references/dns-workflow.md) |
+| 系统 DNS、缓存、IPv6 | [Windows/macOS/Linux](references/platform-dns.md) |
+| 安全 DNS、WebRTC、浏览器 Profile | [浏览器隐私](references/browser-privacy.md) |
+| 变更顺序、成功标准、回滚 | [事务与验收](references/acceptance.md) |
+| 延迟、QUIC、MTU 或吞吐问题 | [网络性能](references/network-performance.md) |
+| 来源或版本有争议 | [来源与事实校正](references/sources.md) |
+
+## 可独立安装的工具
+
+`SKILL_DIR` 为本文件目录。Python 3.10+；JSON 无额外依赖，读取 YAML 需本机 PyYAML，不自动安装。CLI 默认不修改任何配置。
 
 ```bash
+# 现有环境/连接证据；默认离线
 python3 "$SKILL_DIR/scripts/proxy_doctor.py"
-# 只有明确允许网络探测后，使用界面显示的实际端口；7890 只是示例
-python3 "$SKILL_DIR/scripts/proxy_doctor.py" --network --proxy http://127.0.0.1:7890
+# 私有完整生效配置 + 自己填写的策略请求；不是 controller 的局部 /configs
+python3 "$SKILL_DIR/scripts/dns_guard.py" plan --config effective.json --request dns-request.json
+python3 "$SKILL_DIR/scripts/dns_guard.py" audit --config effective-after.json --request dns-request.json
 ```
 
-原生 PowerShell 用已验证的 `python` 或 `py -3` 和 `&` 调用，参考中提供示例。默认不联网；联网仅发指定代理的 IPv4/IPv6 echo 请求，绝不失败后重试直连。IP 默认隐藏。脚本返回 0 仅表示诊断运行完，不能解释成“无泄漏”；`--strict` 对证据不足返回 3，观察到目标 DIRECT 返回 1，参数错误返回 2。
+[请求示例](templates/dns-request.example.json) 的 resolver/组名仅为示例，不直接套用。`plan` 生成待审阅片段与原配置摘要哈希，不生成可直接启动的完整配置；不会打印订阅、密码或旧的私有域名。审查新增/删除列表及空 map 替换语义，保留未知用户字段。已有 split DNS 被替换前需具名批准；内网/企业 DNS 需求未解决就停止迁移，不能牺牲可用性来“通过测试”。
 
-## 先取证，再改动
+联网 probe 要显式 `--network`、本机真实代理端口、批准的 numeric HTTPS resolver 和测试域名。它发送真实 A/AAAA DNS wire 查询，经指定代理验证 TLS、HTTP/MIME 和 DNS 响应；失败不直连。使用方法见 DNS 参考。它只证明该显式请求，不证明系统/浏览器 DNS 或 crash 隔离。
 
-检查应用真实连接、HTTP_PROXY/HTTPS_PROXY/ALL_PROXY 大小写与 NO_PROXY、当前模式、规则顺序、策略组逐层选择和最终节点。运行中的内核、TUN 路由、DNS 与 GUI 开关分别验收。组名或节点名称不是出口国家证明；进程名可能是 node 或辅助进程，不能把所有 node/python 进程全局代理。
+退出码：`plan` 的 0 只表示生成计划；已知阻断 1、输入错误 2；`audit`/`probe` 未覆盖整机验证返回 3（即使局部观察成功）。具体 JSON 状态须与退出码一起读。
 
-有已启用且授权读取的 loopback controller 才用 GET；不新开控制接口，不修改密钥，不导出原始订阅或全部连接日志。脚本只读 `/connections`，自动隐藏节点名、目标 IP、进程和原始错误。没有 controller 就使用 GUI 的 Connections/日志按单次目标请求核对；不能把无连接记录当成安全。
+## 分阶段执行
 
-## 最小配置与回滚
+先取已知可用的基线，再保存本轮将修改对象的原字节、权限、哈希及“不存在”状态；Windows 用私有目录/ACL。先确认回滚与本地救援，远程会话不贸然断网。
 
-修改前保存原字节、权限/所有者、哈希与原先不存在状态到新的私有目录；Windows 使用用户私有目录及 ACL，不执行 chmod/mktemp。回滚仅恢复本轮字段，不覆盖后续用户修改。
+优先 GUI 支持的导入/覆写。规则、DNS、TUN、系统 DNS、浏览器分阶段，前一阶段读回和实际请求未通过时不进入下一阶段。候选完整合并结果先由实际内核语法检查；检查可能读取 provider/Geo 数据，使用隔离副本和现有依赖，先核对本机帮助，不能把离线测试标签套到真实联网校验。
 
-保留订阅原文、订阅地址、节点、密码、端口、系统 DNS/NTP/区域。不安装助手、不提升权限、不关闭现有系统代理；TUN 迁移必须先验证，再在授权范围内调整。运行中不直接改客户端托管状态；优先支持的 GUI/导入扩展，未知内部 schema 不猜字段、不写 SQLite。
+保留订阅、节点、密钥、端口、NTP/区域、已有 stack/MTU。不关闭现有代理路径来“强制 TUN”。DNS 劫持覆盖 UDP/TCP 53 的配置与实际流量都要验；局域网 resolver、浏览器 DoH、系统 DoT 和 IPv6 单独处理。禁止未验证监听就在网卡上填写 127.0.0.1，系统 DNS 通常不能填写端口 1053。
 
-[最小规则模板](templates/ai-rules.yaml) 使用精确后缀，不再默认附带宽泛品牌词、进程通配和无关 DIRECT IP。使用 [规则生成器](scripts/render_rules.py) 指定真实已有组名，预览后合并；不自动选择/更换节点。沿策略组追到实际叶子，发现 DIRECT、循环或未知引用就停止受影响任务。
+只修正已证实的规则优先级和策略链；保护组中 DIRECT、循环、未知 provider 成员会阻止自动候选。新域名补到 [规则模板](templates/ai-rules.yaml) 或 [生成器](scripts/render_rules.py) 的具名计划，不用全局 node/python 代理和宽泛关键词代替定位。
 
-```bash
-python3 "$SKILL_DIR/scripts/render_rules.py" --group '🔰 节点选择'
-```
+## 交付标准
 
-模板不是完整域名清单，也不是可直接启动的内核配置。已安装的旧扩展不能被静默删除；把新规则、旧规则保留项、优先级冲突和待用户决定项列出。现有批准的规则保持含义；业务需求明确的进程规则须来自实际观察且经当前内核语法测试。
+按验收表逐项写已观察/失败/未验证，区分静态候选、运行时加载、真实应用规则链、DNS 上游与系统劫持、原生 IPv6、WebRTC、冷启动/切网/crash、回滚和性能变化。第三方 DNS 测试只是一部分证据；resolver 出口国家不同不自动判失败，相同不自动判通过。
 
-[DNS 片段](templates/dns.yaml) 仅提供保守参考，不覆盖现有解析器/监听地址/策略。候选配置先用实际内核 `-t -f`（以本机帮助为准）校验完整合并结果；通过后刷新，再核对生效状态。解析失败或客户端覆盖改动就回滚并停止，不反复写入。
-
-## 完成标准
-
-分别报告：持久配置、运行时加载、目标域名规则与最终链、显式代理探测、真实应用操作、DNS、IPv6 和 crash 隔离。每项用已观察/失败/未验证，附脱敏证据和回滚位置。
-
-没有用户 Mac 上的真实请求与连接日志，只能交付修复与验收路径，不能宣布现场问题已解决。改变系统时区、浏览器语言或账号国家不能证明网络修复；实际出口路径一致而服务仍拒绝时，保存脱敏错误并核对服务支持地区/账号政策，不承诺代理能解决。
+没有现场数据就交付可验证计划和脚本，不宣称用户 Mac 已修好、服务地区已解锁或“绝不泄漏”。网络路径一致仍地区拒绝时，保存脱敏响应并核对服务资格/出口识别，不能保证更换 DNS 会解决。

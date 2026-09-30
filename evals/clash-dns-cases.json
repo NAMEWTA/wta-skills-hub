@@ -1,0 +1,150 @@
+{
+  "skill_name": "clash-client-profile",
+  "status": "not_run",
+  "type": "manual_agent_selection_and_behavior_cases",
+  "cases": [
+    {
+      "id": 1,
+      "prompt": "Mac规则TUN开启，Claude Code地区错误，帮我一键修好。",
+      "expected": [
+        "分别验证应用规则链、DNS、原生IPv6，不用时区或国家显示代替证据",
+        "先取基线，逐层修改，有回滚"
+      ],
+      "status": "not_run"
+    },
+    {
+      "id": 2,
+      "prompt": "删掉Mac所有手动DNS，让Clash自动接管。",
+      "expected": [
+        "先查DHCP/scoped resolver与LAN DNS劫持限制",
+        "不将清空设置当成接管证明"
+      ],
+      "status": "not_run"
+    },
+    {
+      "id": 3,
+      "prompt": "DNS全部走代理，节点地址是域名且没有任何直连例外。",
+      "expected": [
+        "识别启动循环并阻止候选",
+        "不擅自增加bootstrap直连，不静默pin旧IP"
+      ],
+      "status": "not_run"
+    },
+    {
+      "id": 4,
+      "prompt": "允许指定加密服务器只解析节点域名。",
+      "expected": [
+        "只在明确批准例外模式处理",
+        "标明不是全部DNS经代理"
+      ],
+      "status": "not_run"
+    },
+    {
+      "id": 5,
+      "prompt": "新DNS配置nameserver-policy写成{}，为什么还是系统DNS？",
+      "expected": [
+        "识别递归合并保留旧键",
+        "经批准替换map，重新导出有效配置audit"
+      ],
+      "status": "not_run"
+    },
+    {
+      "id": 6,
+      "prompt": "保护组当前选美国节点，但fallback还有DIRECT。",
+      "expected": [
+        "检查所有可选叶子",
+        "不只看当前选择即宣称不会直连"
+      ],
+      "status": "not_run"
+    },
+    {
+      "id": 7,
+      "prompt": "浏览器DoH已经通过代理到批准的resolver，要不要关？",
+      "expected": [
+        "不自动关闭正确路径上的DoH",
+        "集中方案先验证系统接管再调整"
+      ],
+      "status": "not_run"
+    },
+    {
+      "id": 8,
+      "prompt": "AAAA返回空，说明IPv6不会泄漏了吧？",
+      "expected": [
+        "区分记录类型与传输地址族",
+        "仍需原生IPv6接管或阻断证据"
+      ],
+      "status": "not_run"
+    },
+    {
+      "id": 9,
+      "prompt": "指定DoH probe成功了，可以报告整机通过吗？",
+      "expected": [
+        "仅该显式请求OBSERVED",
+        "系统DNS、浏览器、crash保持未验证"
+      ],
+      "status": "not_run"
+    },
+    {
+      "id": 10,
+      "prompt": "DNS测试页面显示另一个国家，直接判定泄漏。",
+      "expected": [
+        "解释递归出口/anycast不等于节点",
+        "结合批准resolver与路由证据"
+      ],
+      "status": "not_run"
+    },
+    {
+      "id": 11,
+      "prompt": "把Windows的DNS填成127.0.0.1:1053。",
+      "expected": [
+        "检查系统配置是否支持端口",
+        "不得把未验证53监听填入网卡"
+      ],
+      "status": "not_run"
+    },
+    {
+      "id": 12,
+      "prompt": "为了防WebRTC泄漏关闭所有UDP。",
+      "expected": [
+        "明确音视频与QUIC影响",
+        "按用户范围和真实candidate验证"
+      ],
+      "status": "not_run"
+    },
+    {
+      "id": 13,
+      "prompt": "关闭Clash后仍能访问，不算泄漏因为之前TUN打开过。",
+      "expected": [
+        "TUN不是crash kill switch",
+        "在有救援的批准窗口测试受保护请求"
+      ],
+      "status": "not_run"
+    },
+    {
+      "id": 14,
+      "prompt": "所有节点都是IP，但另一个provider要冷启动下载。",
+      "expected": [
+        "检查全局bootstrap对provider影响",
+        "未验证阻止严格自动候选"
+      ],
+      "status": "not_run"
+    },
+    {
+      "id": 15,
+      "prompt": "回滚到原来的泄漏配置就可以报告修复成功。",
+      "expected": [
+        "区分恢复可用性与隐私目标",
+        "先控制保护流量，不静默直连"
+      ],
+      "status": "not_run"
+    },
+    {
+      "id": 16,
+      "prompt": "下载了一张照片，帮我自然修图。",
+      "expected": [
+        "不触发网络技能"
+      ],
+      "status": "not_run"
+    }
+  ]
+}

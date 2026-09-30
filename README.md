@@ -12,7 +12,7 @@
 | system | [system-health-audit](skills/system/system-health-audit/SKILL.md) | 新增：Windows/macOS/Linux 只读基线与具名优化计划 |
 | system | [windows-dev-disk-cleanup](skills/system/windows-dev-disk-cleanup/SKILL.md) | Windows 具名审计、授权清理与空间验收 |
 | system | [proxy-region-locale](skills/system/proxy-region-locale/SKILL.md) | 按字段修改时区、语言和区域，不代替网络排障 |
-| system | [clash-client-profile](skills/system/clash-client-profile/SKILL.md) | Clash Verge Rev/FlClash 的规则、TUN、终端代理与 DNS/IPv6 诊断 |
+| system | [clash-client-profile](skills/system/clash-client-profile/SKILL.md) | Clash Verge Rev/FlClash 的规则 TUN、DNS 计划/审计/探针与分阶段回滚 |
 | automation | [herdr](skills/automation/herdr/SKILL.md) | Herdr 托管环境的终端与 Agent 协作 |
 | automation | [grok-bot-team-steward](skills/automation/grok-bot-team-steward/SKILL.md) | 团队快照、只读比较与具名恢复 |
 | design | [photo-retouch](skills/design/photo-retouch/SKILL.md) | 已有照片精准编辑、自然修饰与创意参考 |
@@ -52,6 +52,8 @@ npx skills@1.5.26 add NAMEWTA/wta-skills-hub --skill clash-client-profile -g -a 
 **分支改动不等于 npm 已发布。** 这轮不改版本、不发包。测试审查分支时先在本地检出该分支，再运行 `npm ci --ignore-scripts` 与 `node bin/wta-skills-hub.mjs --list`；需要安装时对当前检出的本地包执行安装入口。不要把 npm 上旧版本的结果当成本轮改动。
 
 ## 代理问题的正确入口
+
+本轮 DNS 升级的 [详细计划](docs/clash-dns-upgrade-plan.md) 与 [DNS 工作流](skills/system/clash-client-profile/references/dns-workflow.md) 区分严格经代理与批准的加密启动解析例外；新增 `dns_guard.py plan/audit/probe`。不默认删除系统 DNS、关闭浏览器 DoH 或禁用整机 IPv6。
 
 “美国节点 + Claude Code 地区错误”不是 IP 泄漏的充分证据。新的 clash-client-profile 分开检查终端/浏览器、规则顺序、组内实际叶子、运行内核、TUN、DNS、IPv6 和 crash 隔离。不用改时区或关 TLS 来修网络。
 

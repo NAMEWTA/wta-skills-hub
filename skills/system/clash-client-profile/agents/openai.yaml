@@ -1,4 +1,4 @@
 interface:
-  display_name: "Clash 代理诊断"
-  short_description: "诊断规则、终端代理与 DNS/IPv6 风险，先取证再修改"
-  default_prompt: "使用 $clash-client-profile 处理当前请求；先确认目标和范围，报告证据与未验证项。"
+  display_name: "Clash 网络与 DNS"
+  short_description: "规则 TUN、DNS 路径与浏览器隐私的分阶段诊断、配置和回滚"
+  default_prompt: "使用 $clash-client-profile 排查规则 TUN 与 DNS 路径，先生成可回滚计划，再分别验证应用、DNS、IPv6 和浏览器。"
