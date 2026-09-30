@@ -50,7 +50,7 @@ def environment_summary(env: dict[str, str]) -> dict:
         if value is None:
             continue
         if key.lower() == "no_proxy":
-            result[key] = {"set": bool(value), "wildcard": "*" in value.split(","),
+            result[key] = {"set": bool(value), "wildcard": any(part.strip() == "*" for part in value.split(",")),
                            "note": "Inspect locally for target-domain bypass; value redacted"}
         else:
             try:

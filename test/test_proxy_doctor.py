@@ -3,6 +3,9 @@ import contextlib
 import importlib.util
 import io
 import json
+import os
+import subprocess
+import sys
 from pathlib import Path
 import tempfile
 import unittest
@@ -39,6 +42,11 @@ class DoctorTests(unittest.TestCase):
         self.assertNotIn("SECRET", text)
         self.assertNotIn("private.example", text)
         self.assertTrue(data["HTTPS_PROXY"]["credentials_present"])
+
+    def test_no_proxy_wildcard_with_whitespace(self):
+        data = d.environment_summary({"NO_PROXY": " localhost, * ,private.example"})
+        self.assertTrue(data["NO_PROXY"]["wildcard"])
+        self.assertNotIn("private.example", json.dumps(data))
 
     def test_suffix_boundary(self):
         self.assertTrue(d.target_host("API.Anthropic.COM."))
@@ -132,6 +140,14 @@ class RulesTests(unittest.TestCase):
         self.assertNotIn("DOMAIN-KEYWORD", text)
         self.assertNotIn("PROCESS-", text)
         self.assertNotIn("IP-CIDR", text)
+
+    def test_cli_emits_utf8_under_legacy_stdout_encoding(self):
+        script = ROOT / "skills/system/clash-client-profile/scripts/render_rules.py"
+        result = subprocess.run([sys.executable, "-B", str(script), "--group", "🔰 节点选择"],
+                                env={**os.environ, "PYTHONIOENCODING": "ascii"},
+                                capture_output=True, check=False, timeout=10)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout.decode("utf-8"), r.render("🔰 节点选择"))
 
     def test_reject_invalid_groups(self):
         for group in ("", " ", "DIRECT", "REJECT", "group,else", "group\nelse", "group\x01"):

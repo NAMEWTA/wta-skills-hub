@@ -3,6 +3,7 @@
 from __future__ import annotations
 import argparse
 import json
+import sys
 
 DOMAINS = ("anthropic.com", "claude.ai", "claude.com", "openai.com", "chatgpt.com",
            "oaistatic.com", "oaiusercontent.com", "cursor.com", "cursor.sh", "x.ai", "grok.com")
@@ -22,9 +23,11 @@ def main() -> None:
     p.add_argument("--group", required=True, help="Exact existing group name; verify its currently selected leaf is not DIRECT")
     args = p.parse_args()
     try:
-        print(render(args.group), end="")
+        text = render(args.group)
     except ValueError as exc:
         p.error(str(exc))
+    # Keep redirected output UTF-8 even on Windows legacy code pages.
+    sys.stdout.buffer.write(text.encode("utf-8"))
 
 
 if __name__ == "__main__":
