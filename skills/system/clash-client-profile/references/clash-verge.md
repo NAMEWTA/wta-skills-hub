@@ -1,62 +1,25 @@
-# Clash Verge Rev
+# Clash Verge Rev：先识别版本，再处理持久配置
 
-只处理数据目录里同时有 `verge.yaml` 和 `profiles.yaml` 的那一份。按顺序找，用第一个符合的：
+## 定位与只读检查
 
-| 系统 | 候选目录 |
-|---|---|
-| macOS | `~/Library/Application Support/io.github.clash-verge-rev.clash-verge-rev` |
-| Windows | `%APPDATA%\io.github.clash-verge-rev.clash-verge-rev` |
-| Linux | `~/.local/share/io.github.clash-verge-rev.clash-verge-rev`，然后 `~/.config/clash-verge-rev` |
+常见候选为 macOS `~/Library/Application Support/io.github.clash-verge-rev.clash-verge-rev`、Windows `%APPDATA%\io.github.clash-verge-rev.clash-verge-rev`、Linux `$XDG_DATA_HOME/io.github.clash-verge-rev.clash-verge-rev`（缺省 `~/.local/share/...`）。旧目录、便携版和多配置实例可能共存；通过运行进程、GUI 配置路径及文件结构确认，不取第一个命中。
 
-运行中的进程名包含 `Clash Verge`、`clash-verge` 或 `verge-mihomo` 时，就是这个客户端。
+旧实现使用 verge.yaml、config.yaml、profiles.yaml、dns_config.yaml 和 profiles 下的 rules/merge。这里只将它们作为识别线索，不保证所有版本适用。读 profiles 的 current、对应 item、option.rules/merge 引用；校验路径在配置根内且没有越界符号链接。订阅只读组名/类型，不输出 URL、password、secret。
 
-## 读当前订阅
+## 修改方式与迁移
 
-`profiles.yaml` 的 `current` 是当前订阅 uid。在 `items` 里找到该 uid：
+优先用版本支持的 GUI 扩展/导入、模式与 TUN 开关。不得为了模板方便关闭现有系统代理。确需离线文件修改时先让用户正常退出，确认相关写入进程已停止，备份逐项文件；不 kill 客户端，也不边运行边竞写 verge.yaml/config.yaml。没有已验证 schema 就交付 GUI 修改步骤，不猜造 UID 或 profile 引用。
 
-- `option.rules` 指向 `profiles/` 下的规则文件。类型是 `rules`，内容是 `prepend` / `append` / `delete`。这是 1.7 以后「编辑规则」的文件，不是 Merge 里的 `prepend-rules`。
-- `option.merge` 指向 Merge 文件。
-- 订阅正文是 `file` 指向的远程或本地配置。只从中读取 `proxy-groups` 的 `name` 和 `type`，用来核对模板里的策略组。不写这个文件。
+历史字段 `enable_tun_mode`、`enable_system_proxy`、`enable_dns_settings` 与 profile_dns_settings 只在实际版本存在并确认作用时使用。保留系统代理原状态；规则模式为 rule；TUN stack 保留已有兼容值，不按操作系统盲填 gvisor/mixed。助手路径存在不代表服务运行、权限足够或路由接管。
 
-`option.rules` 或 `option.merge` 还没有时，不要在客户端运行期间改 `profiles.yaml`。请用户退出后再补一条对应类型的条目并写上引用。新 uid 不要与已有 uid 重复。
+rule 扩展中的 prepend/append/delete 与 Merge 中的内核配置不是同一层。新域名规则放在会提前截获该流量的规则之前；不随意改已有进程规则、局域网例外和 MATCH 的业务含义。`find-process-mode` 仅在需要且当前内核支持进程规则时处理，不视为覆盖 node 启动脚本路径的保证。
 
-## 可写字段
+DNS 界面、profile 覆写、merge 和生成配置可能有优先级；逐层查看当前版本实际生成结果。不要全段覆盖 DNS，不添加占用 53 端口的监听器，不把 foreign DoH 的地址当成 DNS 经过代理的证据。
 
-改现有文件的对应键，保留其余键、注释和顺序。不要整文件用 YAML 重新导出。不要改生成的 `clash-verge.yaml`；它只用来在刷新后核对。
+## 生效与回滚
 
-`verge.yaml`：
+生成的 clash-verge.yaml 只读，不直接编辑；生成文件正确仍不等于活动内核已加载。刷新后在 GUI/已有 controller 查模式、规则顺序、TUN 和单次目标连接链。受影响的旧连接只在用户同意时关闭/重试；不清空所有会话。
 
-- `enable_tun_mode: true`
-- `enable_system_proxy: false`
-- `enable_dns_settings: true`
-- `profile_dns_settings.<当前 uid>.enabled: true`。没有这个 uid 就补上，不改其他 uid。
+TUN 接管必须结合路由、真实请求与异常断开测试。未验证接管时保持原代理路径；不声称关闭系统代理是防泄漏措施。任何字段被客户端丢弃或配置回滚都标记失败/未验证并停止。
 
-`config.yaml`：
-
-- `mode: rule`
-- `ipv6: false`
-- `unified-delay: true`
-- `tun.stack` 已有值就保留。没有时 macOS 和 Linux 写 `gvisor`，Windows 写 `mixed`。
-- `tun.dns-hijack` 缺少时补 `any:53` 和 `tcp://any:53`。
-- 不改 `tun.enable`、端口、密钥和 `external-controller`。TUN 开关以 `verge.yaml` 的 `enable_tun_mode` 为准。
-
-DNS 写入 `dns_config.yaml` 的 `dns` 映射，键和值来自 [templates/dns.yaml](../templates/dns.yaml)。文件里模板没有的键保留。扩展配置里的 `dns` 会被客户端整段替换，不要写到 Merge。
-
-`find-process-mode: always` 写进当前订阅的 Merge 文件。没有其他内容时保留原有注释再加这一键。
-
-## 服务模式
-
-macOS 上，下面两个路径有一个存在即可：
-
-- `/Library/PrivilegedHelperTools/io.github.clash-verge-rev.clash-verge-rev.service.bundle`
-- `/Library/LaunchDaemons/io.github.clash-verge-rev.clash-verge-rev.service.plist`
-
-Windows 上查询服务 `clash_verge_service`。查不到就报告未安装服务模式。Linux 上在数据目录找不到服务助手时写未验证。
-
-不创建服务，不提升权限。
-
-## 刷新后核对
-
-用户刷新当前订阅后，再读规则文件、`verge.yaml`、`config.yaml`、`dns_config.yaml` 和 Merge 文件。生成的 `clash-verge.yaml` 里应看到 `mode: rule`、`tun.enable: true`、`ipv6: false`。生成文件被旧内容盖住时，运行中的内核标成未验证。
-
-客户端若在刷新时丢掉 `respect-rules`、`nameserver-policy` 或 `direct-nameserver`，报告丢掉的键。不要改去写订阅正文。
+回滚前检查本轮后是否有用户修改，冲突时停止覆盖。恢复原字段、原文件权限和原先不存在状态，重新加载并验证；不能靠写回文件就宣称网络已恢复。

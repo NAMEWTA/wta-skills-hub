@@ -1,4 +1,4 @@
 interface:
-  display_name: "Herdr 终端协作"
-  short_description: "在 Herdr 托管环境中控制窗格、命令和已识别编程智能体"
-  default_prompt: "使用 $herdr，完成我指定的任务并报告验证结果。"
+  display_name: "Herdr 协作"
+  short_description: "在托管环境中按实际 ID 协调窗格和 Agent，保留授权边界并如实报告未验证项"
+  default_prompt: "使用 $herdr 处理当前请求；先确认目标和范围，报告证据与未验证项。"

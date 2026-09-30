@@ -192,6 +192,7 @@ describe("discoverSkills", () => {
         "herdr",
         "photo-retouch",
         "proxy-region-locale",
+        "system-health-audit",
         "vscode-fullstack",
         "windows-dev-disk-cleanup",
       ]
@@ -227,6 +228,7 @@ describe("CLI", () => {
     assert.match(result.stdout, /grok-bot-team-steward/);
     assert.match(result.stdout, /herdr/);
     assert.match(result.stdout, /windows-dev-disk-cleanup/);
+    assert.match(result.stdout, /system-health-audit/);
     assert.match(result.stdout, /vscode-fullstack/);
   });
 

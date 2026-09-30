@@ -1,49 +1,8 @@
-# 客户端 DNS。只覆盖这里列出的键；文件里多出来的键保留。
-# 走代理的域名用国外 DoH，国内域名用国内 DoH。
-# proxy-server-nameserver 只解析代理服务器自身的域名，避免 respect-rules 死锁。
+# Conservative review fragment, NOT a complete deployment configuration.
+# Preserve the user's existing resolver, listen, fake-ip, bootstrap and policy choices.
+# No fixed resolver and no port-53 listener are injected by this template.
+# respect-rules is intentionally not enabled blindly: verify bootstrap reachability,
+# the actual DNS transport route and the current core's requirements first.
+# Disabling AAAA responses would not disable native OS IPv6 or prove isolation.
 dns:
   enable: true
-  ipv6: false
-  enhanced-mode: fake-ip
-  fake-ip-range: 198.18.0.1/16
-  fake-ip-filter-mode: blacklist
-  use-hosts: true
-  use-system-hosts: false
-  respect-rules: true
-  prefer-h3: false
-  listen: 127.0.0.1:53
-  default-nameserver:
-    - tls://223.5.5.5
-    - tls://1.1.1.1
-  proxy-server-nameserver:
-    - https://dns.alidns.com/dns-query
-  direct-nameserver:
-    - https://dns.alidns.com/dns-query
-    - https://doh.pub/dns-query
-  nameserver:
-    - https://1.1.1.1/dns-query
-    - https://dns.google/dns-query
-  nameserver-policy:
-    "geosite:cn":
-      - https://dns.alidns.com/dns-query
-      - https://doh.pub/dns-query
-  fallback: []
-  fallback-filter:
-    geoip: true
-    geoip-code: CN
-    ipcidr:
-      - 240.0.0.0/4
-    domain:
-      - +.google.com
-      - +.facebook.com
-      - +.youtube.com
-  fake-ip-filter:
-    - "*.lan"
-    - "*.local"
-    - "*.arpa"
-    - "+.msftconnecttest.com"
-    - "+.msftncsi.com"
-    - "time.*.com"
-    - "ntp.*.com"
-    - "+.pool.ntp.org"
-    - "localhost.ptlogin2.qq.com"

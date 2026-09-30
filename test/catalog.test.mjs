@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync, readFileSync } from "node:fs";
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync, readFileSync, realpathSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -27,9 +27,9 @@ function skill(root, category, name, body = "") {
 test("catalog is categorized, complete and excludes the bundled Grok template", () => {
   const result = validateCatalog(ROOT);
   assert.deepEqual(result.errors, []);
-  assert.equal(result.skills.length, 9);
+  assert.equal(result.skills.length, 10);
   assert.equal(result.skills.filter((s) => s.category === "coding").length, 3);
-  assert.equal(result.skills.filter((s) => s.category === "system").length, 3);
+  assert.equal(result.skills.filter((s) => s.category === "system").length, 4);
   assert.equal(result.skills.filter((s) => s.category === "automation").length, 2);
   assert.deepEqual(result.skills.filter((s) => s.category === "design").map((s) => s.name), ["photo-retouch"]);
 });
@@ -103,7 +103,6 @@ test("project install delegates with caller cwd and package source", { skip: pro
   const capture = join(root, "captured.json");
   const fakeBin = join(root, "bin");
   put(root, "bin/npx", `#!/usr/bin/env node\nrequire('fs').writeFileSync(process.env.WTA_TEST_CAPTURE,JSON.stringify({cwd:process.cwd(),argv:process.argv.slice(2)}));\n`);
-  // The test intercepts npx, so it cannot install into a real agent directory.
   const chmod = spawnSync("chmod", ["+x", join(fakeBin, "npx")]);
   assert.equal(chmod.status, 0);
   const result = spawnSync(process.execPath, [join(ROOT, "bin/wta-skills-hub.mjs"), "--project", "--skill", "herdr", "-a", "codex", "-y"], {
@@ -111,7 +110,8 @@ test("project install delegates with caller cwd and package source", { skip: pro
   });
   assert.equal(result.status, 0, result.stderr);
   const actual = JSON.parse(readFileSync(capture, "utf8"));
-  assert.equal(actual.cwd, root);
-  assert.equal(resolve(actual.argv[3]), ROOT);
+  // macOS may canonicalize /var to /private/var; compare directory identity.
+  assert.equal(realpathSync(actual.cwd), realpathSync(root));
+  assert.equal(realpathSync(actual.argv[3]), realpathSync(ROOT));
   assert.ok(!actual.argv.includes("-g"));
 });

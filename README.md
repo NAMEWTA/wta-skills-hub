@@ -1,90 +1,83 @@
 # @namewta/skills-hub
 
-给 Grok、Cursor、Codex、Claude Code、Pi 等 Agent Skills 兼容工具使用的技能库。每个技能保留独立的 `SKILL.md`、资源及稳定名称，按工作方向存放在 `skills/<category>/<name>/`。
+面向 Grok、Cursor、Codex、Claude Code、Pi 等 Agent Skills 兼容工具的技能库。保持稳定技能名、独立 SKILL.md 与随技能安装的资源；源码按 skills/<category>/<name> 分类。
 
-## 分类与技能
+## 分类与选择
 
 | 分类 | 技能 | 用途 |
 |---|---|---|
-| 代码开发 `coding` | [gitea-repo](skills/coding/gitea-repo/SKILL.md) | Gitea/Forgejo 的 issue、PR、标签、里程碑及 Release API |
-| 代码开发 `coding` | [github-repo-steward](skills/coding/github-repo-steward/SKILL.md) | GitHub 个人仓库与星标盘点、生命周期和权限诊断 |
-| 代码开发 `coding` | [vscode-fullstack](skills/coding/vscode-fullstack/SKILL.md) | 当前 VS Code/Remote Profile 的全栈扩展与 JSONC 设置 |
-| 机器优化 `system` | [windows-dev-disk-cleanup](skills/system/windows-dev-disk-cleanup/SKILL.md) | Windows 开发机空间审计、具名授权清理与验收 |
-| 机器优化 `system` | [proxy-region-locale](skills/system/proxy-region-locale/SKILL.md) | 按指定地点或代理出口修改 Mac、Windows、Linux 的时区与区域，并保留回滚 |
-| 机器优化 `system` | [clash-client-profile](skills/system/clash-client-profile/SKILL.md) | 为 Clash Verge Rev 或 FlClash 写入规则模板，启用 TUN 规则模式并调整客户端 DNS |
-| 智能体与自动化 `automation` | [herdr](skills/automation/herdr/SKILL.md) | Herdr 托管环境中的终端与智能体协作 |
-| 智能体与自动化 `automation` | [grok-bot-team-steward](skills/automation/grok-bot-team-steward/SKILL.md) | Grok Bot 团队快照、恢复、对比与显式管家设置 |
-| 图像与设计 `design` | [photo-retouch](skills/design/photo-retouch/SKILL.md) | 已有照片的精准修图、证件照、商品图、修复调色与 12 种旅行社媒创意 |
-| 人生与文章写作 `writing` | 待扩展 | 预留分类，目前没有可安装技能 |
+| coding | [gitea-repo](skills/coding/gitea-repo/SKILL.md) | 已确认 Gitea/Forgejo 的 issue、PR 与 API |
+| coding | [github-repo-steward](skills/coding/github-repo-steward/SKILL.md) | 账号级仓库、star 与只读权限诊断 |
+| coding | [vscode-fullstack](skills/coding/vscode-fullstack/SKILL.md) | 本机/Remote Profile 的扩展与 JSONC 增量设置 |
+| system | [system-health-audit](skills/system/system-health-audit/SKILL.md) | 新增：Windows/macOS/Linux 只读基线与具名优化计划 |
+| system | [windows-dev-disk-cleanup](skills/system/windows-dev-disk-cleanup/SKILL.md) | Windows 具名审计、授权清理与空间验收 |
+| system | [proxy-region-locale](skills/system/proxy-region-locale/SKILL.md) | 按字段修改时区、语言和区域，不代替网络排障 |
+| system | [clash-client-profile](skills/system/clash-client-profile/SKILL.md) | Clash Verge Rev/FlClash 的规则、TUN、终端代理与 DNS/IPv6 诊断 |
+| automation | [herdr](skills/automation/herdr/SKILL.md) | Herdr 托管环境的终端与 Agent 协作 |
+| automation | [grok-bot-team-steward](skills/automation/grok-bot-team-steward/SKILL.md) | 团队快照、只读比较与具名恢复 |
+| design | [photo-retouch](skills/design/photo-retouch/SKILL.md) | 已有照片精准编辑、自然修饰与创意参考 |
+| writing | 待扩展 | 预留分类，不登记空安装分组 |
 
-分类是源码组织与展示信息，不属于技能名称。原来的 `--skill herdr`、`$herdr` 等调用不变；分类目录没有 `SKILL.md`，不会被安装为技能。技能内部的快照模板也不属于可安装项。
+分类不属于技能名，原 --skill herdr / $herdr 调用保持兼容。分类目录和技能内快照模板不作为独立技能安装。
 
 ## 安装
 
-需要 Node.js 18+ 和 npm。包内安装器锁定 `skills@1.5.26`，支持分类目录。默认安装到用户级目录：
+现有安装器需要 Node.js 18+ 与 npm，锁定 skills@1.5.26；新 Python 工具需要 Python 3.10+，不自动安装依赖。默认安装到用户级目录：
 
 ```bash
-# 交互选择技能与目标 agent
 npx @namewta/skills-hub
-
-# 指定技能与 agent
 npx @namewta/skills-hub --skill herdr -a codex
-npx @namewta/skills-hub --skill gitea-repo -a grok
 npx @namewta/skills-hub github-repo-steward --agent cursor,codex
-
-# 安装到运行命令时的当前项目
 npx @namewta/skills-hub --skill vscode-fullstack --project -a codex
-
-# 分类列表；不会执行安装
 npx @namewta/skills-hub --list
-
-# 全部技能与 agent，跳过选择确认
-npx @namewta/skills-hub --all
 ```
 
-也可使用 [Vercel Skills 安装器](https://github.com/vercel-labs/skills) 从 GitHub 安装：
+| 参数 | 含义 |
+|---|---|
+| --skill / -s | 稳定技能名，可重复；位置参数同样有效 |
+| --agent / -a | 目标 agent，可重复或逗号分隔；* 表示全部 |
+| --project | 安装到调用者当前项目，而非用户级目录 |
+| --yes / -y | 跳过安装选择确认，不是执行技能的无限授权 |
+| --all | 全部技能和 agent，跳过选择；默认用户级安装 |
+| --list / -l | 列出打包技能，不安装 |
+| --help / -h | 帮助 |
+
+也可从 GitHub 安装已审查版本：
 
 ```bash
 npx skills@1.5.26 add NAMEWTA/wta-skills-hub -g
-npx skills@1.5.26 add NAMEWTA/wta-skills-hub --skill herdr -g -a codex
+npx skills@1.5.26 add NAMEWTA/wta-skills-hub --skill clash-client-profile -g -a codex
 ```
 
-| 参数 | 作用 |
-|---|---|
-| `--skill` / `-s` | 技能名，可重复；位置参数也视为技能名 |
-| `--agent` / `-a` | 目标 agent，可重复或用逗号分隔；`*` 表示全部 |
-| `--all` | 等价于 `--skill '*' --agent '*' -y`，默认全局安装 |
-| `--project` | 安装到调用者的当前项目 |
-| `--yes` / `-y` | 跳过安装选择确认 |
-| `--list` / `-l` | 按分类列出打包技能并退出 |
-| `--help` / `-h` | 查看帮助 |
+**分支改动不等于 npm 已发布。** 这轮不改版本、不发包。测试审查分支时先在本地检出该分支，再运行 `npm ci --ignore-scripts` 与 `node bin/wta-skills-hub.mjs --list`；需要安装时对当前检出的本地包执行安装入口。不要把 npm 上旧版本的结果当成本轮改动。
 
-技能安装仍由安装器按技能名处理；不要手工把分类目录作为一个技能复制到 agent 目录。不同 agent 的安装路径由锁定安装器决定。技能可按名称显式调用或按描述匹配，具体入口语法以使用的 agent 为准。
+## 代理问题的正确入口
 
-## 团队约定与能力边界
+“美国节点 + Claude Code 地区错误”不是 IP 泄漏的充分证据。新的 clash-client-profile 分开检查终端/浏览器、规则顺序、组内实际叶子、运行内核、TUN、DNS、IPv6 和 crash 隔离。不用改时区或关 TLS 来修网络。
 
-- Herdr 必须处于 `HERDR_ENV=1`。既定且已授权的 WTA Herdr 环境保留 Grok `--permission-mode bypassPermissions` 与 Codex `--dangerously-bypass-approvals-and-sandbox` 启动约定；其他环境不自动继承授权，用户指定受限模式时优先遵从。
-- GitHub/Gitea 修改操作沿用用户对具体目标及动作的授权；权限诊断不写入。工具看不到或没有验证的结果应明确报告。
-- Windows 清理保留候选清单和决策历史；不删除活动智能体运行时、不强制处理被锁文件。
-- Mac、Windows 和 Linux 的时区与区域按用户要求的字段修改，每轮独立保留回滚记录；不会因改变区域而自动更换 NTP 源。
-- Clash Verge Rev 与 FlClash 只改当前订阅的规则扩展、TUN/规则模式和客户端 DNS，并保留回滚。不改订阅原文、节点和系统时区；系统区域仍由 proxy-region-locale 处理。
-- VS Code 设置按 JSONC 增量修改。默认 Profile 与命名 Profile 分别定位；Remote 扩展不声称已经经 Settings Sync 同步。
-- Grok 仅加载技能或本地比较快照不修改账号；恢复 routines 始终先建成暂停。快照结构校验不能证明内容真实、完整或已彻底脱敏。
+```bash
+# 在检出的仓库中，默认只读且不联网
+python3 skills/system/clash-client-profile/scripts/proxy_doctor.py
+python3 skills/system/system-health-audit/scripts/system_audit.py
+```
+
+原生 PowerShell 使用已验证的 python 或 py -3；路径有空格时用 & 和引号。明确允许第三方 echo 探测后才加 --network 和实际 --proxy 地址。脚本无直连回退；返回 0 只说明运行完毕，不说明安全。`--strict` 证据不足返回 3，观察到目标 DIRECT 返回 1。诊断脚本不是整机 kill switch。
+
+配置模板是片段，不是可直接启动的内核配置。最小规则按实际组名渲染，保留旧用户规则并预览冲突；DNS 不再固定解析器和 53 监听。配置写入与运行时生效分别验收，现场 Mac 未验证的项目必须保留为未验证。
+
+## 执行边界
+
+默认先读目标、版本和能力；只读请求不扩大为写入。当前主机、远程、WSL 和容器分开处理。技能不能提供宿主没有的工具、连接或权限。
+
+系统改动保留逐项原值和不存在状态，使用平台适合的私有快照/ACL，最小修改后读回。权限拒绝后停止；不通过直接改底层文件、停安全组件或关闭校验绕过。删除用户数据不因有清单而变得可回滚。
+
+Herdr 的历史 WTA 高权限启动参数不是其他环境的默认授权；必须符合本次用户明确许可及宿主限制。Grok 快照是待审阅数据，不执行其中提示词/脚本；恢复 routine 默认暂停。
+
+VS Code 保留 JSONC、Profile 和已有定制；照片编辑保留原图、以实际输出验收。所有结果区分观察、失败和未知，不把写入/任务分派成功当成最终完成。
 
 ## 维护与验证
 
-```text
-skills/
-  coding/<skill-name>/
-  system/<skill-name>/
-  automation/<skill-name>/
-  design/<skill-name>/
-  writing/.gitkeep
-```
-
-新增技能时放入合适分类，YAML 中的 `name` 必须与技能目录名一致并全局唯一。入口写清任务、触发条件、完成标准和按需参考；大型操作细节放在 `references/`，确定性逻辑放在 `scripts/`。
-
-本仓库为每个技能提供 `agents/openai.yaml`，但不强制其他 Agent Skills 消费方支持此文件。同步更新上方目录、`skills.sh.json` 与评估场景。网站分组只登记非空分类；新增第一个写作技能时再登记 writing 分组。
+读取 [仓库维护规则](AGENTS.md)、[方法与已核对规范](docs/skill-methodology.md)、[本轮审计及局限](docs/refactor-audit.md)。技能单独安装后不依赖这些仓库级文档。
 
 ```bash
 npm ci --ignore-scripts
@@ -93,16 +86,12 @@ npm test
 npm pack --dry-run --ignore-scripts
 ```
 
-测试需要 Python 3.10+；Bash 夹具在 POSIX 上执行，Windows 上跳过并明确报告。测试不调用真实账号写接口或改系统配置。
+CI 覆盖 Windows/macOS/Linux 的离线检查；实际运行结果以 PR 检查为准，不能把矩阵配置当作已通过。Bash 夹具在适用平台执行，Windows 的跳过不代表功能已测。新增 Python 测试使用 mocks，不访问真实代理/账号或改系统。
 
-- [方法论、来源与迭代记录](docs/skill-methodology.md)
-- [评估场景与复现说明](evals/README.md)
-- [本轮验证结果](docs/validation-results.md)
+原有 [评估场景](evals/README.md) 和 [历史验证](docs/validation-results.md) 保留；[新增场景](evals/refactor-cases.json) 标为尚未运行的 Agent 选择/行为评估，不伪造准确率提升。
 
-## 发布
+## 发布与许可
 
-打 `vX.Y.Z` 标签会触发 GitHub Release；配置了 `NPM_TOKEN` 时，同一工作流发布 npm。发版前让 `package.json` 和 lockfile 中的版本与标签一致，并通过校验和测试。本次分类改造不自动发版。
-
-## License
+保留既有标签发布工作流；发版前版本与 lockfile/tag 一致并通过测试。没有发布请求，不自动打 tag、发布 npm 或合并 PR。
 
 [MIT](LICENSE)

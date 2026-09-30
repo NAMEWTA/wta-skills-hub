@@ -1,4 +1,4 @@
 interface:
-  display_name: "Clash 客户端配置"
-  short_description: "为 Clash Verge 或 FlClash 写入规则模板，并启用 TUN 规则模式与客户端 DNS"
-  default_prompt: "使用 $clash-client-profile。识别当前的 Clash Verge 或 FlClash，把规则模板写入当前订阅，并启用 TUN 规则模式和客户端 DNS。不要改订阅节点，也不要改系统时区。"
+  display_name: "Clash 代理诊断"
+  short_description: "诊断规则、终端代理与 DNS/IPv6 风险，先取证再修改"
+  default_prompt: "使用 $clash-client-profile 处理当前请求；先确认目标和范围，报告证据与未验证项。"

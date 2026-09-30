@@ -1,74 +1,45 @@
-# Windows 区域
+# Windows 时区与区域
 
-这些命令来自 Microsoft 对 `tzutil`、时区自动设置和语言 PowerShell 的文档，没有在编写这份参考的 Mac 上执行过。到 Windows 上先读回，再改，并用该机的列表核对 ID。
+使用原生 PowerShell，先检查可用 cmdlet 与当前权限；查询和当前用户设置不一律要求管理员。系统级写入需要相应授权，拒绝就停止，不改注册表绕过管理策略。
 
-用管理员 PowerShell。授权失败就停，不要反复弹窗。
+## 快照
 
-## 回滚快照
+在当前用户私有目录创建唯一 GUID 子目录，检查 ACL，保存本轮字段。时间/语言对象可用 Export-Clixml 保留结构，另外保存 JSON 供审查；恢复时逐项验证对象和版本，不盲目导入执行内容。区分原先不存在的值。备份可能含用户偏好，不上传仓库。
 
-保存本轮会改的值，而不是整个注册表：
-
-- `tzutil /g` 与 `Get-TimeZone | Format-List Id,DisplayName,SupportsDaylightSavingTime`
-- `HKLM\SYSTEM\CurrentControlSet\Services\tzautoupdate` 的 `Start`
-- `Get-WinUserLanguageList | ConvertTo-Json -Depth 6`
-- `Get-Culture`、`Get-WinSystemLocale`、`Get-WinHomeLocation`
-- 本轮准备修改的 `HKCU\Control Panel\International` 值
-- 若会改浏览器语言，该偏好文件的原内容
+只读 `Get-TimeZone`、`Get-WinUserLanguageList`、`Get-Culture`、`Get-WinSystemLocale`、`Get-WinHomeLocation`；不要导出整个注册表。当前用户区域不授权系统 locale 或所有用户修改。
 
 ## 时区
 
-Windows 时区 ID 不是 IANA 名称。纽约是 `Eastern Standard Time`，必须出现在 `tzutil /l` 或 `Get-TimeZone -ListAvailable` 里才可以写。不要把 `America/New_York` 传给 `tzutil`。
+ID 必须出现在 `Get-TimeZone -ListAvailable` 或 `tzutil /l`。纽约示例为 Eastern Standard Time；不要传入 America/New_York，也不要用 `_dstoff` 关闭夏令时。
 
 ```powershell
-tzutil /s "Eastern Standard Time"
+Set-TimeZone -Id 'Eastern Standard Time'
+Get-TimeZone
 ```
 
-或 `Set-TimeZone -Id "Eastern Standard Time"`。不要加 `_dstoff`，那个后缀会关闭夏令时。
+固定时区时按当前版本设置界面/管理政策关闭自动时区，保存原状态；不盲改 tzautoupdate 注册表、不停 W32Time、不改计划任务或 NTP。
 
-要固定在所选时区时，把自动时区关掉。Microsoft 的说明是：`tzautoupdate` 的 `Start` 为 `3` 表示自动时区开，`4` 表示关。
+## 语言与格式
 
-```powershell
-Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\tzautoupdate" -Name Start -Value 4
-```
-
-不要改 `HKLM\SYSTEM\CurrentControlSet\Services\W32Time\Parameters` 的 `Type`。那是自动对时，不是时区。也不要停用 Time Synchronization 计划任务。
-
-读回 `tzutil /g`。显示名可以是「东部时间」，ID 仍应是 `Eastern Standard Time`。
-
-## 语言和区域
-
-仅修改时区时跳过本节。先读列表。目标语言已存在时，把那个对象移到第一位，保留它的 `InputMethodTips`。不存在时，用 `New-WinUserLanguageList` 得到新的第一项，再按原顺序加回其他语言。不要写成只有一种语言的新列表。
+目标已在 Get-WinUserLanguageList 中时移动原对象到首位，保留 InputMethodTips。目标不存在才建立新对象，按原顺序追加其他语言。新增语言包属于安装操作，单独授权，不因设置区域而下载语言包。
 
 ```powershell
 $Existing = @(Get-WinUserLanguageList)
-$List = New-WinUserLanguageList -Language "en-US"
-$Current = $Existing | Where-Object LanguageTag -eq "en-US" | Select-Object -First 1
+$List = New-WinUserLanguageList -Language 'en-US'
+$Current = $Existing | Where-Object LanguageTag -eq 'en-US' | Select-Object -First 1
 if ($Current) { $List[0] = $Current }
 foreach ($Lang in $Existing) {
-  if ($Lang.LanguageTag -ne "en-US") { [void]$List.Add($Lang) }
+  if ($Lang.LanguageTag -ne 'en-US') { [void]$List.Add($Lang) }
 }
+# 仅在用户已授权 en-US 语言列表调整后执行：
 Set-WinUserLanguageList -LanguageList $List -Force
-Set-Culture en-US
+Get-WinUserLanguageList
 ```
 
-写完读回 `Get-WinUserLanguageList`。输入法提示变空时，从回滚恢复，不要再猜一个键盘布局。
+仅格式授权时使用 Set-Culture 并读回，不自动改语言列表。Home Location、UI 语言和非 Unicode 程序使用的系统 locale 是不同概念。`Set-WinSystemLocale` 只在用户要求该系统设置时执行；系统 locale 的生效可能需要重启，不能承诺仅重登录就完成。不要自动重启。
 
-`Set-WinSystemLocale en-US` 写入系统区域，新登录后才完整生效；不要为此重启。
+保留用户日期/数字/输入法定制；GeoID 用当前系统资料确认，不把美国 244 写到所有国家。不改变 Microsoft 账号或商店国家。
 
-美国的 Home Location GeoID 是 244：
+## 验收
 
-```powershell
-Set-WinHomeLocation -GeoId 244
-```
-
-这不是 Microsoft 账户国家，也不是应用商店区域。后两者不改。其他国家不要写 244；先查该系统接受的 GeoID。
-
-`Set-Culture` 之后读 `HKCU\Control Panel\International`。短日期、时间和纸张若已经是 `en-US` 的值，就不要再按记忆覆盖。只有用户指定了某个格式、且当前值不同时，才改对应的值，并在回滚里留下原值。
-
-## 浏览器与结束
-
-浏览器语言的条件见技能正文：用户要求包含它，且进程没在运行。Chrome 的用户语言在该配置文件的 Preferences 里，改 `intl.accept_languages` 和 `intl.selected_languages`，目标语言在前，原语言保留。不要整文件重排。
-
-用 `w32tm /query /status` 只读报告时间服务。不执行 `w32tm /config`，也不改 NTP 服务器。
-
-新登录前，不宣称开始菜单和已打开的程序已经换成新语言。不要重启。
+逐项读回，输入法丢失或列表被缩短就恢复本轮值。浏览器按实际 Profile 且关闭状态处理。`w32tm /query /status` 只读，失败不意味着应重新配置 NTP。分别报告已保存、待登录、待重启、未验证。

@@ -1,4 +1,4 @@
 interface:
-  display_name: "Windows 开发机清理"
-  short_description: "审计 Windows 开发机空间，按具名授权执行并核验清理"
-  default_prompt: "使用 $windows-dev-disk-cleanup 审计 Windows 开发机磁盘占用，持续记录清理决策，并在明确授权后安全执行。"
+  display_name: "Windows 磁盘清理"
+  short_description: "具名审计与授权清理，保护活动运行时及用户数据，保留授权边界并如实报告未验证项"
+  default_prompt: "使用 $windows-dev-disk-cleanup 处理当前请求；先确认目标和范围，报告证据与未验证项。"

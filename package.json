@@ -3,51 +3,21 @@
   "version": "0.0.6",
   "description": "Install WTA agent skills into Grok, Cursor, Codex, Claude Code, Pi, and other Agent Skills-compatible tools.",
   "type": "module",
-  "bin": {
-    "wta-skills-hub": "./bin/wta-skills-hub.mjs"
-  },
-  "files": [
-    "bin",
-    "lib",
-    "skills",
-    "skills.sh.json",
-    "README.md",
-    "LICENSE",
-    "docs",
-    "evals"
-  ],
+  "bin": { "wta-skills-hub": "./bin/wta-skills-hub.mjs" },
+  "files": ["bin", "lib", "skills", "skills.sh.json", "README.md", "LICENSE", "docs", "evals"],
   "scripts": {
-    "test": "node --test test/cli.test.mjs test/catalog.test.mjs test/helpers.test.mjs test/packaging.test.mjs",
+    "test": "node --test test/cli.test.mjs test/catalog.test.mjs test/helpers.test.mjs test/packaging.test.mjs test/proxy.test.mjs",
     "validate": "node scripts/validate-skills.mjs",
     "prepublishOnly": "npm run validate && npm test"
   },
   "skillsCli": "skills@1.5.26",
-  "engines": {
-    "node": ">=18"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/NAMEWTA/wta-skills-hub.git"
-  },
+  "engines": { "node": ">=18" },
+  "repository": { "type": "git", "url": "git+https://github.com/NAMEWTA/wta-skills-hub.git" },
   "homepage": "https://github.com/NAMEWTA/wta-skills-hub#readme",
-  "bugs": {
-    "url": "https://github.com/NAMEWTA/wta-skills-hub/issues"
-  },
-  "keywords": [
-    "skills",
-    "agent-skills",
-    "grok",
-    "cursor",
-    "claude-code",
-    "codex",
-    "npx"
-  ],
+  "bugs": { "url": "https://github.com/NAMEWTA/wta-skills-hub/issues" },
+  "keywords": ["skills", "agent-skills", "grok", "cursor", "claude-code", "codex", "npx"],
   "author": "Ting'an Wang",
   "license": "MIT",
-  "publishConfig": {
-    "access": "public"
-  },
-  "dependencies": {
-    "yaml": "2.9.1"
-  }
+  "publishConfig": { "access": "public" },
+  "dependencies": { "yaml": "2.9.1" }
 }
