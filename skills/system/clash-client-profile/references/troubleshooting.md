@@ -60,6 +60,8 @@ WSL 的 NAT、镜像网络及 Windows 代理可达性依版本而异；不假定
 
 ## DNS、IPv6 与独立验收
 
+新增的 [DNS 工作流](dns-workflow.md)、[系统 DNS](platform-dns.md)、[浏览器隐私](browser-privacy.md) 和 [事务验收](acceptance.md) 提供本轮具体流程。优先区分节点 bootstrap 与业务解析；真实 DNS wire probe 不等于系统劫持已验证。
+
 显式 HTTP CONNECT / socks5h echo 探测只测试该请求路径。脚本不在 IPv4 loopback HTTP 代理前加 `curl -6`，因为那会限制连接代理的地址族；它使用 IPv6-only echo 主机测试代理远端 IPv6 能力。探测失败表示不可用/未知，不代表泄漏；探测成功也不代表本机原生 IPv6 已被接管。
 
 `respect-rules`、resolver 选择、代理节点域名解析与 bootstrap 必须配合当前内核验证。国外 DoH 可以仍经直连；53 端口劫持不涵盖所有 DoH/DoT/浏览器解析。`198.18.0.0/15` fake-ip 不是公网出口，不能做地理定位。不要通过随意添加全局 DNS 规则制造代理启动循环。

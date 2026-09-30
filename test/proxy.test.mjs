@@ -34,3 +34,20 @@ test("UI metadata follows the current OpenAI consumer contract", () => {
     assert.ok(metadata.default_prompt.includes(`$${name}`));
   }
 });
+
+
+test("DNS plans, effective-policy audits and DoH wire probes pass offline regressions", () => {
+  const result = spawnSync(process.platform === "win32" ? "python" : "python3",
+    ["-B", "-m", "unittest", "discover", "-s", "test", "-p", "test_dns_guard.py", "-v"],
+    { cwd: root, encoding: "utf8", env: { ...process.env, PYTHONDONTWRITEBYTECODE: "1" } });
+  assert.equal(result.status, 0, result.error?.message || result.stderr || result.stdout);
+});
+
+test("DNS request example is explicitly scoped, not a deployable profile", () => {
+  const request = JSON.parse(readFileSync(join(root, "skills/system/clash-client-profile/templates/dns-request.example.json"), "utf8"));
+  assert.equal(request.schema_version, 1);
+  assert.equal(request.bootstrap.mode, "deny");
+  assert.equal(request.replace_existing_dns_policies, false);
+  assert.ok(request.targets.length > 0);
+  assert.ok(!Object.hasOwn(request, "tun"));
+});

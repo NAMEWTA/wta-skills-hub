@@ -23,3 +23,12 @@ DNS 界面、profile 覆写、merge 和生成配置可能有优先级；逐层�
 TUN 接管必须结合路由、真实请求与异常断开测试。未验证接管时保持原代理路径；不声称关闭系统代理是防泄漏措施。任何字段被客户端丢弃或配置回滚都标记失败/未验证并停止。
 
 回滚前检查本轮后是否有用户修改，冲突时停止覆盖。恢复原字段、原文件权限和原先不存在状态，重新加载并验证；不能靠写回文件就宣称网络已恢复。
+
+
+## 本轮 DNS 计划的接入
+
+按 [DNS 工作流](dns-workflow.md) 生成候选，只在本版本实际支持的规则/覆写/DNS 管理层应用。`candidate_fragment` 不是订阅全文；`rules_extension` 与内核 `dns`/`tun` 是不同产物，不放错层。现有 DNS 策略 map 要经批准替换；递归 Merge 的空对象可能保留旧策略，不能只看导入成功。
+
+先在私有目录保存原状态，确认 schema 和各覆写层的执行顺序，使用隔离完整候选检查。读回最终生成配置后再跑 audit，尤其检查 nameserver-policy、proxy-server-nameserver-policy、fallback、direct-nameserver 和 URL 的代理组后缀没有被 GUI 删除/还原。未知格式仅交付 GUI 操作计划，不写 SQLite 或 臆造字段。
+
+不因为启用 TUN 就关闭旧系统代理；不得替用户改节点密码、subscription URL、DNS 监听端口或系统区域。原生系统 DNS/IPv6 与浏览器更改读对应参考并分阶段实施，失败按 [事务与验收](acceptance.md) 停止/回滚。DNS 测试通过不能替代真实 Claude Code 连接链和服务响应。
