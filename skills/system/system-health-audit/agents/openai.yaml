@@ -1,4 +1,4 @@
 interface:
   display_name: "跨平台系统审计"
-  short_description: "只读采集系统基线，形成具名且可验证的优化计划，保留授权边界并如实报告未验证项"
-  default_prompt: "使用 $system-health-audit 处理当前请求；先确认目标和范围，报告证据与未验证项。"
+  short_description: "只读建立跨平台开发机基线，区分环境并形成有证据的优化计划"
+  default_prompt: "请使用 $system-health-audit：Windows 开发机最近编译慢，先只读定位瓶颈，不删除东西。"

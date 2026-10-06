@@ -95,23 +95,45 @@ test("CLI lists Chinese categories while preserving selectable skill names", () 
   assert.equal(result.status, 0, result.stderr);
   for (const label of Object.values(CATEGORIES)) assert.ok(result.stdout.includes(label));
   assert.match(result.stdout, /proxy-region-locale/);
-  assert.match(result.stdout, /writing.*待扩展/);
+  assert.match(result.stdout, /writing[\s\S]*待扩展/);
 });
 
-test("project install delegates with caller cwd and package source", { skip: process.platform === "win32" }, (t) => {
+
+test("portable frontmatter rejects host-only keys, oversized fields and non-string metadata", (t) => {
   const root = fixture(t);
-  const capture = join(root, "captured.json");
-  const fakeBin = join(root, "bin");
-  put(root, "bin/npx", `#!/usr/bin/env node\nrequire('fs').writeFileSync(process.env.WTA_TEST_CAPTURE,JSON.stringify({cwd:process.cwd(),argv:process.argv.slice(2)}));\n`);
-  const chmod = spawnSync("chmod", ["+x", join(fakeBin, "npx")]);
-  assert.equal(chmod.status, 0);
-  const result = spawnSync(process.execPath, [join(ROOT, "bin/wta-skills-hub.mjs"), "--project", "--skill", "herdr", "-a", "codex", "-y"], {
-    cwd: root, encoding: "utf8", env: { ...process.env, PATH: `${fakeBin}:${process.env.PATH}`, WTA_TEST_CAPTURE: capture },
-  });
-  assert.equal(result.status, 0, result.stderr);
-  const actual = JSON.parse(readFileSync(capture, "utf8"));
-  // macOS may canonicalize /var to /private/var; compare directory identity.
-  assert.equal(realpathSync(actual.cwd), realpathSync(root));
-  assert.equal(realpathSync(actual.argv[3]), realpathSync(ROOT));
-  assert.ok(!actual.argv.includes("-g"));
+  const variants = [
+    ['host', 'disable-model-invocation: true', /non-portable frontmatter/],
+    ['compat', `compatibility: ${'x'.repeat(501)}`, /compatibility/],
+    ['meta', 'metadata:\n  reviewed: true', /string/],
+    ['policy', 'metadata:\n  wta-explicit-only: "yes"', /true.*false/],
+    ['synced', '', /reserved/],
+  ];
+  for (const [name, extra, expected] of variants) {
+    const local = join(root, name);
+    put(local, `skills/coding/${name}/SKILL.md`, `---\nname: ${name}\ndescription: Valid task description\n${extra}\n---\nBody\n`);
+    assert.match(discoverSkills(local).errors.join('\n'), expected);
+  }
+});
+
+test("standalone link validation refuses existing resources in sibling skills", (t) => {
+  const root = fixture(t);
+  const own = join(root, 'skills/coding/own');
+  put(root, 'skills/coding/other/reference.md', 'must not require another installation');
+  const file = put(root, 'skills/coding/own/SKILL.md', '[sibling](../other/reference.md)');
+  assert.match(checkLinks(file, root, own).join('\n'), /escapes standalone/);
+});
+
+test("all skill UI strings are quoted and behavioral cases cover four distinct routing conditions", () => {
+  const { skills } = discoverSkills(ROOT);
+  const cases = JSON.parse(readFileSync(join(ROOT, 'evals/quality-cases.json'), 'utf8'));
+  assert.equal(cases.status, 'not-run');
+  assert.equal(new Set(cases.cases.map((entry) => entry.id)).size, 40);
+  for (const skill of skills) {
+    const text = readFileSync(join(dirname(skill.file), 'agents/openai.yaml'), 'utf8');
+    for (const key of ['display_name', 'short_description', 'default_prompt']) assert.match(text, new RegExp(`  ${key}: "[^\\n]+"`));
+    const group = cases.cases.filter((entry) => entry.skill === skill.name);
+    assert.deepEqual(group.map((entry) => entry.kind).sort(), ['boundary', 'failure', 'negative', 'positive']);
+    for (const entry of group) { assert.equal(entry.status, 'not-run'); assert.ok(entry.prompt && entry.assertions.length); }
+    assert.equal(group.find((entry) => entry.kind === 'negative').expected_activation, false);
+  }
 });

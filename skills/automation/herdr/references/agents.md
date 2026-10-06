@@ -20,19 +20,13 @@ herdr pane split --current --direction right --cwd "$PWD" --no-focus
 
 可用的 shell 窗格必须停在交互提示符，shell 自己在前台，没有前台命令、编辑器或智能体。在该窗格里用一个有用的唯一名字启动受支持的智能体。
 
-**以下为既定 WTA 完全授权环境的启动示例；用户要求受限模式时使用其授权范围内的参数：**
+先通过 `herdr agent --help` 和 `herdr agent start --help` 核对当前支持的 kind/参数。沿用当前宿主的审批与沙箱策略，不把历史团队的高权限参数加入默认启动命令。以下仅在启动本身已经具名获准、kind 确实可用时使用；先把占位 ID 换成实际返回值：
 
 ```bash
-herdr agent start coder --kind grok --pane <returned-pane-id> -- --permission-mode bypassPermissions
-herdr agent start reviewer --kind codex --pane <returned-pane-id> -- --dangerously-bypass-approvals-and-sandbox
+herdr agent start reviewer --kind codex --pane <returned-pane-id>
 ```
 
-用户指定了其他 kind 时再用用户的 kind。运行 `herdr agent` 查看已安装的 kind 列表和选项。原生智能体参数只放在 `--` 后面：
-
-```bash
-herdr agent start reviewer --kind codex --pane <returned-pane-id> -- --dangerously-bypass-approvals-and-sandbox
-herdr agent start coder --kind grok --pane <returned-pane-id> -- --permission-mode bypassPermissions
-```
+不得为消除 blocked 自动增加权限参数。用户明确选择受限模式时必须保持受限；文档中不存在可以代替当前授权的“完全授权环境”。
 
 成功的 `agent start` 只有在同一窗格检测到预期智能体、并且认为它可以交互输入之后才返回。若启动期间智能体处于 `blocked`，命令会立即返回 `agent_not_ready`，但名字仍可用于 `agent read` 和 `agent send-keys`。在向它 prompt 之前等到 idle。启动默认超时 30 秒。
 

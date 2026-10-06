@@ -1,10 +1,21 @@
 ---
 name: grok-bot-team-steward
-description: "导出、恢复或比较 Grok Bot 团队配置、技能、记忆和对话快照，并支持显式设置管家。仅用于 Grok Bot 团队或 grok-bot-team 快照；数据库备份、普通文件归档不适用。"
+description: 导出、只读比较或具名恢复 Grok Bot 团队快照，包括角色、技能、记忆和对话参考；用户明确要求时设置管家。用于 Grok Bot 团队，不处理数据库备份和普通文件归档。
 license: MIT
+compatibility: Local diff requires readable snapshots; account operations require actual Grok Bot tools. Bundled helpers require Bash and their documented utilities.
+metadata:
+  author: NAMEWTA
+  wta-format-reviewed: '2026-10-06'
 ---
-
 # Grok Bot 团队快照
+
+## 输入与输出契约
+
+先判定 activate/setup/snapshot/restore/diff，确定实际技能目录、独立数据工作区和账号范围。仅上传快照默认先预览；只读 diff 不联系 Bot。
+
+导出交付 MANIFEST、覆盖/GAPS、脱敏结果和实际完成标记；恢复交付旧 ID→新 ID 对照、暂停 routines 与 DROP LIST。快照目录不是技能安装目录。
+
+示例：“只比较两份 Grok 团队快照的 roster 和 routines，不联系任何 Bot。”应进入本技能；“备份 PostgreSQL 数据库到 S3。”不应由本技能接管。
 
 技能目录与快照数据目录分开。优先用户指定工作区；/workspace 仅在托管环境确实存在、可写且适合时使用，不在 Windows/macOS 根目录新建它。否则使用已确认的用户工作区。Bash 辅助脚本需要实际 Bash，Windows 不直接执行 .sh，也不自动安装依赖。
 

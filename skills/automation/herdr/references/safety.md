@@ -11,4 +11,4 @@
 - 除非用户明确要停止 server 及其窗格进程，否则不要从活动会话里运行 `herdr server stop`。
 - 永远不要杀掉主 Herdr 进程。需要隔离 server 的实验，使用命名的测试 session。
 - CLI server 错误是 stderr 上的 JSON，退出码 1。CLI 语法错误退出码 2。
-- 仅在既定 WTA 完全授权环境启动 grok / Codex 时沿用团队默认（用户明确要求受限模式时优先遵从）：`grok --permission-mode bypassPermissions` 与 `codex --dangerously-bypass-approvals-and-sandbox`。
+- 启动命令保持宿主现有权限；禁止依据团队历史约定关闭审批或沙箱。blocked 表示需要处理实际条件，不是扩大权限的理由。

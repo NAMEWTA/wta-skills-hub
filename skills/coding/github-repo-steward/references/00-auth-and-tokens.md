@@ -18,7 +18,7 @@ gh api -i user | rg -i 'x-oauth|x-accepted-github-permissions|github-authenticat
 
 Fine-grained 没有 `X-OAuth-Scopes`。缺权限时看 **403 响应头** `X-Accepted-Github-Permissions`。
 
-## 本技能需要的权限
+## 按动作选择最小权限（不是全部必选）
 
 Fine-grained PAT（https://github.com/settings/personal-access-tokens ）：
 
@@ -29,7 +29,7 @@ Fine-grained PAT（https://github.com/settings/personal-access-tokens ）：
 | Repository | Administration | **Read and write** | 归档、取消归档、改设置、**删除仓库** |
 | Account | **Starring** | **Read and write** | 列自己的 star 一般可读；**加/取消 star 必须 write** |
 
-Repository access：`All repositories`，或至少包含本次要动的仓。
+Repository access 优先仅选本次具名仓库；只有明确需要账号全量覆盖且用户同意时才选择 `All repositories`。只读盘点不要同时要求归档、删除、star 的写权限。
 
 Classic PAT（https://github.com/settings/tokens ）：
 

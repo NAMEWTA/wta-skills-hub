@@ -1,0 +1,12 @@
+{
+  "reviewedAt": "2026-10-06",
+  "reviewEveryDays": 30,
+  "sources": [
+    { "id": "agent-skills", "url": "https://agentskills.io/specification", "markers": ["SKILL.md", "compatibility", "metadata", "1024"] },
+    { "id": "codex-skills", "url": "https://learn.chatgpt.com/docs/build-skills", "markers": [".agents/skills", "allow_implicit_invocation"] },
+    { "id": "claude-skills", "url": "https://code.claude.com/docs/en/skills", "markers": [".claude/skills", "disable-model-invocation"] },
+    { "id": "openai-interface", "url": "https://raw.githubusercontent.com/openai/skills/main/skills/.system/skill-creator/references/openai_yaml.md", "markers": ["Quote all string values", "default_prompt", "short_description"] },
+    { "id": "npm-oidc", "url": "https://docs.npmjs.com/trusted-publishers/", "markers": ["OIDC", "id-token", "staged"] },
+    { "id": "npm-stage", "url": "https://docs.npmjs.com/staged-publishing/", "markers": ["npm stage publish", "npm stage approve", "11.15.0"] }
+  ]
+}

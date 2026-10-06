@@ -1,10 +1,21 @@
 ---
 name: windows-dev-disk-cleanup
-description: "审计和具名授权清理 Windows 开发机磁盘，包括 C 盘、大文件、应用、工具链与可重建缓存。用于 Windows 空间问题；其他系统与一般性能分析不适用。"
+description: 审计 Windows 开发机磁盘，并在具名授权后清理可重建缓存、旧应用或工具链。用于 C 盘空间、大文件与清理验收；不处理其他操作系统或一般性能调优。
 license: MIT
+compatibility: Requires native Windows and PowerShell on the actual target; specific servicing operations need separate administrator authorization.
+metadata:
+  author: NAMEWTA
+  wta-format-reviewed: '2026-10-06'
 ---
-
 # Windows 开发机磁盘清理
+
+## 输入与输出契约
+
+确认原生 Windows、目标卷和当前清理清单；每项具有准确路径/产品 ID、归属、保留依赖与状态。扫描发现候选不自动新增删除授权。
+
+清单逐项写估计占用、批准动作、执行/锁定/保留状态、卷实际空间变化和工具链存活检查。删除不可逆时写明不可回滚，不用目录大小冒充释放量。
+
+示例：“仅审计 C 盘空间，列出可清理项目让我确认。”应进入本技能；“清理 macOS 的开发缓存。”不应由本技能接管。
 
 面向原生 Windows/PowerShell；先确认不是 WSL 或远程 Linux。部分系统动作需要管理员，审计不自动提权。阶段方法见 [清理工作流](references/windows-cleanup-workflow.md)。本入口的授权与停止条件优先于参考中的示例命令。
 

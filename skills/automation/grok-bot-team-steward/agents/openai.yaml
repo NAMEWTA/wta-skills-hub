@@ -1,4 +1,4 @@
 interface:
   display_name: "Grok 团队快照"
-  short_description: "按模式导出、比较和具名恢复，保护隐私与暂停任务，保留授权边界并如实报告未验证项"
-  default_prompt: "使用 $grok-bot-team-steward 处理当前请求；先确认目标和范围，报告证据与未验证项。"
+  short_description: "导出与比较 Grok 团队快照，具名恢复对象并保留覆盖缺口"
+  default_prompt: "请使用 $grok-bot-team-steward：只比较两份 Grok 团队快照的 roster 和 routines，不联系任何 Bot。"

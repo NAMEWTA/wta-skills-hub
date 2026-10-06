@@ -1,10 +1,21 @@
 ---
 name: photo-retouch
-description: "编辑已有照片，进行局部去杂物、调光调色、自然人像、证件照、商品图、换背景、修复与扩图，以及旅行贴纸/明信片/拼贴和社媒创意；也用于这些修图提示词。不用于无原图的通用生图、SVG 或代码绘图。"
+description: 编辑已有照片或编写相应修图提示词：局部去杂物、自然人像、调色、证件照、商品图、背景替换、修复扩图和旅行创意。必须有可读原图才能实际编辑；不用于无原图生图、SVG 或代码绘图。
 license: MIT
+compatibility: Actual editing requires a readable source image and a host-provided image editor supporting reference images; prompt-only work needs no image execution tool.
+metadata:
+  author: NAMEWTA
+  wta-format-reviewed: '2026-10-06'
 ---
-
 # 照片精准编辑
+
+## 输入与输出契约
+
+区分实际修图与仅写提示词；确认底图、人物/商品身份参考、修改区域、保留项与交付用途。无法读取的附件名称不是可编辑素材。
+
+实际编辑交付宿主要求的图片结果；仅提示词交付素材顺序、区域/动作/保留约束。尺寸、格式、身份保持和精确像素要求只按实际可检验结果陈述。
+
+示例：“只把我上传照片右后方的游客去掉，其他人物和构图保持不变。”应进入本技能；“没有参考图，画一座未来城市。”不应由本技能接管。
 
 先查看实际可用原图，确认底图、人物/宠物身份参考、风格参考的职责。文字占位、文件名或无法读取的附件不算原图。只要提示词时不出图；直接修图且素材齐备则使用宿主实际支持参考图的工具，不杜撰参数或模型版本。
 

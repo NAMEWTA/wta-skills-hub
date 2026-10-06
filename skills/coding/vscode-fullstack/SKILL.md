@@ -1,10 +1,21 @@
 ---
 name: vscode-fullstack
-description: "配置当前或指定 VS Code/Remote Profile 的 Python、Vue、React、Go 扩展和 JSONC 设置并保留定制。用于编辑器环境配置；应用代码编写、安装语言运行时或修改项目规范不适用。"
+description: 配置已确认 VS Code 或 Remote Profile 的 Python、Vue、React、Go 扩展与 JSONC 设置，保留已有定制。用于编辑器环境设置；不安装语言运行时、不改应用代码或项目规范。
 license: MIT
+compatibility: Requires access to the actual VS Code/Insiders/Remote host and its supported CLI or UI; extension installation needs approved network access.
+metadata:
+  author: NAMEWTA
+  wta-format-reviewed: '2026-10-06'
 ---
-
 # VS Code 全栈 Profile
+
+## 输入与输出契约
+
+确定产品、活动 Profile、扩展主机、所需语言和只读/修改模式。读取当前扩展及设置差异后再选候选；未使用的语言不整套安装。
+
+逐项报告目标 Profile、已存在/新增/冲突保留的扩展与键、备份位置和读回；GUI 补全、Remote 生效、重载分别列为实测或待验证。
+
+示例：“给已确认的 Remote SSH Profile 补 Python 与 Vue 扩展，保留我的 formatter。”应进入本技能；“给 React 页面添加一个登录表单。”不应由本技能接管。
 
 只处理确认的 Profile。按需读取 [扩展与设置](references/extensions-and-settings.md)，用户已有 formatter、解释器和项目约定优先，不因模板覆盖现有选择。
 

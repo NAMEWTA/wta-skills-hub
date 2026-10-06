@@ -1,4 +1,6 @@
 interface:
   display_name: "Herdr 协作"
-  short_description: "在托管环境中按实际 ID 协调窗格和 Agent，保留授权边界并如实报告未验证项"
-  default_prompt: "使用 $herdr 处理当前请求；先确认目标和范围，报告证据与未验证项。"
+  short_description: "显式调用 Herdr 管理终端与 Agent，固定目标并验证任务完成"
+  default_prompt: "请使用 $herdr：请通过 Herdr 在当前 tab 的右侧启动一个受限 reviewer，保持当前焦点。"
+policy:
+  allow_implicit_invocation: false

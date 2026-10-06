@@ -82,10 +82,10 @@ def _hostname_is_private(hostname: str) -> bool:
 
 
 def _ssh_host_url(hostname: str, port: int | None = None) -> str:
-    scheme = "http" if _hostname_is_private(hostname) else "https"
-    if port and port not in (80, 443):
-        return f"{scheme}://{hostname}:{port}"
-    return f"{scheme}://{hostname}"
+    """SSH transport ports do not identify an HTTP API port; never infer plaintext."""
+    del port
+    host = f"[{hostname}]" if ":" in hostname and not hostname.startswith("[") else hostname
+    return f"https://{host}"
 
 
 def is_github_host(host_url: str) -> bool:
