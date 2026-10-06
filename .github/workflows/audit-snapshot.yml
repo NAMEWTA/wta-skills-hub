@@ -1,0 +1,26 @@
+name: Audit snapshot
+on:
+  push:
+    branches: [feat/skills-quality-interactive-installer]
+permissions:
+  contents: read
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci --ignore-scripts
+      - name: Prepare isolated CLI toolchain
+        run: npm install --prefix .audit-tooling --ignore-scripts --save-exact @clack/prompts citty yaml typescript @types/node
+      - name: Archive tracked source and isolated dependencies
+        run: tar --exclude=.git -czf "$RUNNER_TEMP/audit-source.tar.gz" .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: audit-source
+          path: ${{ runner.temp }}/audit-source.tar.gz
+          retention-days: 1
