@@ -1,35 +1,35 @@
 name: Validate skills
-
 on:
   pull_request:
   push:
     branches: [main]
-
 permissions:
   contents: read
-
 jobs:
   validate:
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        node: [18, 22]
+        node: [22, 24]
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node }}
-      - uses: actions/setup-python@v5
+          package-manager-cache: false
+      - uses: actions/setup-python@v7
         with:
-          python-version: "3.10"
-      - name: Install pinned dependencies
-        run: npm ci --ignore-scripts
-      - name: Validate skill catalog
-        run: npm run validate
-      - name: Offline tests
+          python-version: '3.10'
+      - run: npm ci --ignore-scripts
+      - run: npm run typecheck
+      - run: npm run validate
+      - name: Offline unit and integration tests
         run: npm test
-      - name: Verify package contents without lifecycle scripts
-        run: npm pack --dry-run --ignore-scripts
+      - name: Real tarball, fresh production npm install, both scopes
+        run: npm run smoke:package -- --network
+      - run: npm pack --dry-run --ignore-scripts

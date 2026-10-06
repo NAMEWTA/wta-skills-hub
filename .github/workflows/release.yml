@@ -1,92 +1,75 @@
 name: Release
-
 on:
   push:
-    tags:
-      - "v*"
+    tags: ['v*']
   workflow_dispatch:
     inputs:
       tag:
-        description: "Release tag (e.g. v0.0.1)"
+        description: Existing reviewed release tag (for example v0.1.0)
         required: true
         type: string
-        default: "v0.0.6"
-      delete_tags:
-        description: "Comma-separated existing tags/releases to delete first"
-        required: false
-        type: string
-        default: ""
-
+      publish_mode:
+        description: Stage for maintainer 2FA approval, or explicitly publish directly
+        required: true
+        default: stage
+        type: choice
+        options: [stage, direct]
+permissions:
+  contents: read
+concurrency:
+  group: release-${{ inputs.tag || github.ref_name }}
+  cancel-in-progress: false
 jobs:
   release:
+    if: github.repository == 'NAMEWTA/wta-skills-hub'
     runs-on: ubuntu-latest
+    environment: npm
+    timeout-minutes: 25
     permissions:
-      contents: write
+      contents: read
       id-token: write
     env:
-      GH_TOKEN: ${{ github.token }}
+      RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+      PUBLISH_MODE: ${{ inputs.publish_mode || 'stage' }}
     steps:
-      - uses: actions/checkout@v4
+      - name: Validate existing stable tag name
+        run: '[[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]'
+      - uses: actions/checkout@v6
         with:
+          ref: ${{ inputs.tag || github.ref_name }}
           fetch-depth: 0
-      - uses: actions/setup-node@v4
+          persist-credentials: false
+      - uses: actions/setup-node@v6
         with:
-          node-version: "22"
-          registry-url: "https://registry.npmjs.org"
-      - uses: actions/setup-python@v5
+          node-version: '24'
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+      - uses: actions/setup-python@v7
         with:
-          python-version: "3.10"
-      - name: Install pinned dependencies
-        run: npm ci --ignore-scripts
-      - name: Validate skill catalog
-        run: node scripts/validate-skills.mjs
-      - name: Test installer CLI
-        run: npm test
-      - name: Delete requested tags and releases
-        if: github.event_name == 'workflow_dispatch' && inputs.delete_tags != ''
-        env:
-          DELETE_TAGS: ${{ inputs.delete_tags }}
+          python-version: '3.10'
+      - name: Use pinned npm with staged publishing support
+        run: npm install --global npm@11.21.0 --ignore-scripts --no-audit --no-fund
+      - name: Verify tag, commit, main ancestry and lock version
         run: |
           set -euo pipefail
-          IFS=',' read -ra TAGS <<< "$DELETE_TAGS"
-          for tag in "${TAGS[@]}"; do
-            tag="${tag// /}"
-            [ -z "$tag" ] && continue
-            gh release delete "$tag" --yes --cleanup-tag 2>/dev/null || true
-            git push origin --delete "refs/tags/$tag" 2>/dev/null || true
-          done
-      - name: Resolve release tag
-        id: tag
-        env:
-          EVENT_NAME: ${{ github.event_name }}
-          INPUT_TAG: ${{ inputs.tag }}
-        run: |
-          set -euo pipefail
-          git push origin --delete refs/heads/tmp-rename-check 2>/dev/null || true
-          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
-            TAG="$INPUT_TAG"
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git tag "$TAG"
-            git push origin "refs/tags/$TAG"
-          else
-            TAG="$GITHUB_REF_NAME"
-          fi
-          echo "name=$TAG" >> "$GITHUB_OUTPUT"
-      - name: Create GitHub release
-        run: |
-          TAG="${{ steps.tag.outputs.name }}"
-          if gh release view "$TAG" >/dev/null 2>&1; then
-            echo "Release $TAG already exists"
-          else
-            gh release create "$TAG" --generate-notes --latest --title "$TAG"
-          fi
-      - name: Publish to npm
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: |
-          if [ -z "$NODE_AUTH_TOKEN" ]; then
-            echo "NPM_TOKEN is not set; skipping npm publish"
-            exit 0
-          fi
-          npm publish --access public
+          test "$(git rev-parse HEAD)" = "$(git rev-parse "refs/tags/$RELEASE_TAG^{commit}")"
+          git merge-base --is-ancestor HEAD origin/main
+          node --input-type=module -e 'import fs from "node:fs"; const p=JSON.parse(fs.readFileSync("package.json")); const l=JSON.parse(fs.readFileSync("package-lock.json")); if (`v${p.version}` !== process.env.RELEASE_TAG || l.version !== p.version || l.packages[""].version !== p.version) throw new Error("tag/package/lock versions differ");'
+      - run: npm ci --ignore-scripts
+      - run: npm run typecheck
+      - run: npm run validate
+      - run: npm test
+      - run: npm run smoke:package -- --network
+      - name: Build the exact publish artifact
+        run: npm pack --ignore-scripts
+      - uses: actions/upload-artifact@v7
+        with:
+          name: npm-package-${{ env.RELEASE_TAG }}
+          path: namewta-skills-hub-*.tgz
+          retention-days: 30
+      - name: Stage reviewed tarball using OIDC (not yet public)
+        if: env.PUBLISH_MODE == 'stage'
+        run: npm stage publish "namewta-skills-hub-${RELEASE_TAG#v}.tgz" --access public --provenance
+      - name: Explicit direct publish using OIDC
+        if: github.event_name == 'workflow_dispatch' && env.PUBLISH_MODE == 'direct'
+        run: npm publish "namewta-skills-hub-${RELEASE_TAG#v}.tgz" --access public --provenance

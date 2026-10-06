@@ -1,0 +1,48 @@
+name: Standards review
+on:
+  schedule:
+    - cron: '23 9 * * 1'
+  workflow_dispatch:
+permissions:
+  contents: read
+  issues: write
+concurrency:
+  group: standards-review
+  cancel-in-progress: false
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Check official URLs, markers and human review age
+        id: check
+        continue-on-error: true
+        run: node scripts/check-standards.mjs > standards-report.json
+      - uses: actions/upload-artifact@v7
+        with:
+          name: standards-report
+          path: standards-report.json
+          retention-days: 30
+      - name: Open or update a review issue (never edit skills automatically)
+        if: steps.check.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          title='Review upstream skill standards'
+          issue=$(gh issue list --state open --search '"Review upstream skill standards" in:title' --json number,title --jq '.[] | select(.title == "Review upstream skill standards") | .number' | head -n 1)
+          printf 'Official source check failed or the 30-day human review is due. Read current pages and review affected tests before updating the review date.\n\nRun: %s/%s/actions/runs/%s\n' "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID" > review-body.md
+          if [ -n "$issue" ]; then
+            gh issue comment "$issue" --body-file review-body.md
+          else
+            gh issue create --title "$title" --body-file review-body.md
+          fi
+      - if: steps.check.outcome == 'failure'
+        run: exit 1

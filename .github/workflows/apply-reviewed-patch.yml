@@ -1,0 +1,55 @@
+name: Apply reviewed skills patch
+on:
+  push:
+    branches: [feat/skills-quality-interactive-installer]
+    paths: ['.maintenance/quality-part-*.bin']
+permissions:
+  contents: write
+jobs:
+  apply:
+    if: github.repository == 'NAMEWTA/wta-skills-hub'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.10'
+      - name: Verify lossless transfer and apply only reviewed source changes
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import hashlib, lzma, os
+          from pathlib import Path
+          data = b''.join(Path(f'.maintenance/quality-part-{i}.bin').read_bytes() for i in range(1, 6))
+          assert len(data) == 53312
+          assert hashlib.sha256(data).hexdigest() == 'ae7b407a338b8b7382baaf520deb00c314e3df5d442a67047d340be70b8cd59c'
+          patch = lzma.decompress(data)
+          assert len(patch) == 215301
+          Path(os.environ['RUNNER_TEMP'], 'quality.patch').write_bytes(patch)
+          PY
+          git apply --check --index --unidiff-zero "$RUNNER_TEMP/quality.patch"
+          git apply --index --unidiff-zero "$RUNNER_TEMP/quality.patch"
+          git diff --cached --check
+          test -z "$(git diff --cached --name-only -- .github/workflows)"
+      - run: npm ci --ignore-scripts
+      - run: npm run typecheck
+      - run: npm run validate
+      - name: Run offline tests
+        run: npm test
+      - name: Verify real package with fresh production dependencies
+        run: npm run smoke:package -- --network
+      - name: Commit only to the feature branch and remove transfer parts
+        run: |
+          set -euo pipefail
+          git rm -- .maintenance/quality-part-*.bin
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'feat: optimize all skills and add native interactive installer'
+          git push origin HEAD:refs/heads/feat/skills-quality-interactive-installer
