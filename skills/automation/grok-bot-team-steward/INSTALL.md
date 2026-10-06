@@ -1,65 +1,23 @@
-# INSTALL
+# 安装与迁移
 
-本文件夹就是技能。安装目标路径：
+本目录是独立技能，整体复制，不能只复制 SKILL.md 而丢掉 references/templates/scripts。终端安装入口：
 
-```
-/workspace/grok-bot-team-steward/
-├── SKILL.md
-├── README.md
-├── INSTALL.md
-├── steward/
-├── references/
-├── templates/
-└── scripts/
+```bash
+npx @namewta/skills-hub -s grok-bot-team-steward -a codex --global
 ```
 
-解压 zip 后如果多了一层同名目录，把内层 `grok-bot-team-steward/` 整夹放到 `/workspace/`。管家必须能直接打开：
+这是 AI CLI 的文件安装，不会创建 Grok Bot、获得账号连接或自动启动 routines。实际快照/恢复需要宿主提供对应 Grok 工具。
 
-```
-/workspace/grok-bot-team-steward/SKILL.md
-```
+## 目录与第一次使用
 
-## 当前账号：第一次快照
+以当前 SKILL.md 所在目录作为技能路径；快照写入用户明确指定的独立工作区。`/workspace` 仅是确实存在的托管环境示例，不在本机根目录强制创建。替换 steward 和模板中的路径占位后再发送。
 
-1. 创建 Bot，Name=`管家`，Title=`Grok Bot 团队管家`。Description 用 `steward/STEWARD-PROFILE.md` 里那一整段。
-2. 把本技能夹放到 `/workspace/grok-bot-team-steward/`。
-3. 把 `steward/ACTIVATE.md` 的「当前机器」整段发给管家。也可以直接发 `steward/SETUP-INSTRUCTIONS.md`。
-4. 核对它列出的花名册，回复可以落盘。
-5. 等它写出 `/workspace/grok-bot-team-YYYY-MM-DD/`。
-6. 把 dated 目录推私有 Git 或下载。技能夹可以一起带走，但团队真相源是 dated 目录。
+先读 [技能入口](SKILL.md) 确定 activate/setup/snapshot/restore/diff。已有管家复用；仅明确要求设置才按 [设置流程](steward/SETUP-INSTRUCTIONS.md) 操作。安装本目录不是创建 Bot 或联系团队的授权。
 
-同一天再备一次，目录变成 `grok-bot-team-YYYY-MM-DD-HHMM`，旧目录不动。
+## 导出与恢复
 
-## 新账号：按快照初始化
+导出先盘点具名范围，再按 [导出协议](references/02-export-protocol.md) 建立未完成快照、脱敏和校验；完成前不得保留模板的 COMPLETED。只读比较直接读两份本地快照，不需要账号工具。
 
-1. 登录 Grok Bot。
-2. 上传 dated 目录到 `/workspace/grok-bot-team-YYYY-MM-DD/`，不要改名。
-3. 上传本技能夹到 `/workspace/grok-bot-team-steward/`。
-4. 创建同样的「管家」，贴同一段 Description。
-5. 按快照里的 `connectors.md` 在 Settings → Plugins 连接插件。登录态带不走。
-6. 把 `steward/ACTIVATE.md` 的「新机器」那段发给管家。
-7. 看预览，回复「按这份建」。
-8. 按快照内 `RESTORE.md` 勾验收。routine 保持暂停，两次成功试跑后再启用。
+恢复先预览具名对象、连接器缺口和不可迁移资料。仅在已有相应授权时创建对象；令牌不进入目录，routines 保持暂停。以 [恢复验收](references/08-verification.md) 的实际证据为准。
 
-快照里自带 `INIT.md` 和 `RESTORE.md`。万一技能夹没一起传，管家仍可按目录自己的说明书建队。
-
-## 装进 Settings → Plugins → Yours
-
-1. 打开本夹 `SKILL.md`。
-2. 新建私有技能，名称必须是 `grok-bot-team-steward`。
-3. 正文粘贴 SKILL.md（含 frontmatter）。
-4. 对管家启用。
-5. 告诉管家：references / templates / steward 在 `/workspace/grok-bot-team-steward/`，按需去读，不要一次性全塞进上下文。
-
-没有图形界面保存技能时，把 `SKILL.md` 当本轮说明书贴给管家也可以跑。下一轮还要再贴，所以优先保存成技能。
-
-## Git
-
-技能夹和 dated 快照建议分目录或分 tag：
-
-```
-git add grok-bot-team-steward
-git add grok-bot-team-2026-09-16
-```
-
-提交前可跑 `scripts/scrub.sh`。不要提交 `.env`、cookie、浏览器 profile、`auth.json`。
+向私有 Git 推送或上传快照属于额外数据分发，需符合用户指定交付范围；本地脱敏扫描不证明完全无秘密。

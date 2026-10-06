@@ -12,3 +12,6 @@ dist/
 temp/
 __pycache__/
 *.pyc
+dist/
+*.tgz
+.audit-tooling/

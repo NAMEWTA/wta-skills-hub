@@ -1,38 +1,9 @@
-# grok-bot-team-steward
+# Grok Bot 团队快照
 
-这一个文件夹就是完整技能。把它放到 Grok Bot 能读到的位置（建议 `/workspace/grok-bot-team-steward/`），对管家说「安装并启用这个技能」即可。
+本文件夹是技能，不是团队数据。入口与权限边界见 [SKILL.md](SKILL.md)，安装和迁移见 [INSTALL.md](INSTALL.md)。
 
-不要把本文件夹当成团队档案。本技能是相机；照片是管家另外写出的：
+支持 activate（只加载）、setup（明确设置管家）、snapshot（具名导出）、restore（预览后授权恢复）、diff（只读比较）。实际账号动作取决于宿主提供的工具；终端文件安装不会自动连接 Grok。
 
-```
-/workspace/grok-bot-team-YYYY-MM-DD/
-```
+快照保存在用户确认的独立工作区，使用 `grok-bot-team-YYYY-MM-DD` 名称，重复命名增加时间/序号，不覆盖旧快照。不假定 `/workspace` 存在。
 
-同一天第二次导出：`/workspace/grok-bot-team-YYYY-MM-DD-HHMM/`。旧目录不覆盖。
-
-## 文件夹本身
-
-```
-grok-bot-team-steward/          ← 安装单位
-├── SKILL.md                    技能入口（发现本技能只看这个文件）
-├── README.md                   本文件
-├── INSTALL.md                  安装与换机
-├── CHEATSHEET.md
-├── steward/
-│   ├── STEWARD-PROFILE.md      管家 Bot 三栏
-│   ├── ACTIVATE.md             激活口令
-│   └── SETUP-INSTRUCTIONS.md   一份文件自安装
-├── references/                 硬规则、导出、恢复、对话、脱敏、提示词
-├── templates/snapshot/         快照骨架，导出时复制到 dated 目录
-└── scripts/                    日期命名、校验、扫密钥
-```
-
-## 两种模式
-
-| 你说 | 管家做 |
-|---|---|
-| 快照 / 备份 / 持久化 | 扫描当前团队，写 `grok-bot-team-YYYY-MM-DD/` |
-| 换机初始化 / 恢复 / 读这份目录 | 读取 dated 目录，重建 Bot、技能、群聊、记忆参考、暂停态 routine |
-| 对比两天 | 只报 diff，不改 Bot |
-
-步骤见 `INSTALL.md`。口令见 `steward/ACTIVATE.md`。
+references 按任务加载；templates/snapshot 是输出骨架，不是可独立激活的子技能；scripts 是可选 Bash 辅助工具，依赖以各脚本帮助为准。

@@ -1,10 +1,22 @@
 ---
 name: herdr
-description: "控制 Herdr 的窗格、标签页、工作区和已识别 Agent。仅用户明确提及 Herdr 或要求通过 Herdr 控制终端时使用；不因任务适合后台或并行而自动启用。"
+description: 仅在用户明确要求通过 Herdr 控制终端时，管理已识别的窗格、工作区与 Agent 协作。必须确认 Herdr 托管环境；不因普通任务适合并行或后台执行而自行启用。
 license: MIT
+compatibility: Requires HERDR_ENV=1 and a working Herdr CLI in the actual managed host/session; commands must match local --help.
+metadata:
+  author: NAMEWTA
+  wta-format-reviewed: '2026-10-06'
+  wta-explicit-only: 'true'
 ---
-
 # Herdr
+
+## 输入与输出契约
+
+要求用户明确选择 Herdr；再定位 session、pane/agent ID、工作目录和任务边界。并行任务逐一给出可写文件范围、验收与停止条件。
+
+报告实际目标 ID、发送/开始/完成三个状态、读取到的结果、文件变化和未知项。只有状态已核对且任务产物通过验收，才能说子任务完成。
+
+示例：“请通过 Herdr 在当前 tab 的右侧启动一个受限 reviewer，保持当前焦点。”应进入本技能；“这个任务适合并行，你自己找办法加速吧。”不应由本技能接管。
 
 必须处在 HERDR_ENV=1 的托管环境且 CLI 可用；环境标记不是额外权限。先核实所在主机/session，不能从外部接管 UI 聚焦窗口。
 
@@ -23,7 +35,7 @@ herdr --help
 
 ## 权限与并发
 
-沿用宿主当前权限。历史 WTA 启动约定中的 bypassPermissions / dangerously-bypass-approvals-and-sandbox 不是自动授权：只有当前用户明确批准该具体环境、目标和运行方式，且宿主允许时才可使用；不为消除 blocked 而扩大权限。用户指定受限模式始终优先。
+沿用宿主当前权限。不得从历史团队默认值推导关闭审批或沙箱的授权；不为消除 blocked 扩大权限。用户指定受限模式始终优先。
 
 多个 Agent 不同时修改同一文件或共享工作树中的重叠内容；先分配文件边界，确需隔离时使用经授权的独立 worktree。任务携带目标、验收和停止条件，不把父任务的授权无边界传递。实际 CLI 能力以当前 --help 为准，不编造后台接口。
 

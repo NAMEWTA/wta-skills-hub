@@ -23,3 +23,11 @@ python3 -B -m unittest discover -s test -p test_helpers.py -v
 覆盖 Gitea 65 标签分页、缺少实例时的早停、403 只读回退、GitHub 分页请求和失败传播、Grok 模板/完成标记/命名冲突等。GitHub mock 检查的是包装脚本给 CLI 的分页合同，不是对真实 GitHub GraphQL 服务的集成验证。
 
 新版独立报告位于 `results/`；总结果见 [验证记录](../docs/validation-results.md)。临时夹具与安装目录位于系统临时目录，不纳入技能发现范围。
+
+## 2026-10-06 全技能质量场景
+
+`quality-cases.json` 对 10 个技能分别提供 positive、negative、boundary、failure，共 40 个独立场景。初始状态均为 `not-run`，不是已测分数。负例只评估不错误选用技能及不扩大授权，不要求执行该技能的正例工作流。
+
+在全新会话中仅安装待测技能，记录客户端版本、模型版本、安装作用域、实际发现的 skill、实际 activation、工具调用/结果、是否写入及逐条 rubric 证据。不得用正文 grep 或 mocks 推定行为通过。正例中只有实际发生的条件分支适用；未发生的分支写 `not-applicable`，缺少观测写 `unknown`。
+
+每项保存 prompt、输出记录、断言 verdict（pass/fail/unknown/not-applicable）和证据路径。总分只统计有实际证据的场景，同时单列未运行数量；安全边界失败必须独立披露，不能被总体命中率平均掩盖。结果另存新文件，不回填虚构日期或覆盖历史评估。

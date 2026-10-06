@@ -1,10 +1,21 @@
 ---
 name: clash-client-profile
-description: "排查和配置 Clash Verge Rev、FlClash/Mihomo 的规则 TUN、DNS 上游与劫持、终端和浏览器代理；用于开启代理后无法访问、Claude Code 区域错误、DNS/IPv6/WebRTC 疑似泄漏及网络改动回滚。先识别客户端和运行主机。其他 VPN 产品、仅改时区语言或一般磁盘清理不适用。"
+description: 诊断或配置 Clash Verge Rev、FlClash/Mihomo 的规则 TUN、DNS 与终端/浏览器代理。用于代理无法访问、地区报错、DNS/IPv6/WebRTC 路径疑点及网络回滚；不以改时区或其他 VPN 配置替代排错。
 license: MIT
+compatibility: Requires the actual Clash/Mihomo host and version. Bundled helpers need Python 3.10+; YAML input needs PyYAML. Network probes require explicit approval.
+metadata:
+  author: NAMEWTA
+  wta-format-reviewed: '2026-10-06'
 ---
-
 # Clash 网络与 DNS：先保证路径，再验证隐私和可用性
+
+## 输入与输出契约
+
+选择只读诊断/计划/修改/验收，并明确真实主机、客户端/内核版本、应用入口和保护目标。区分全部 DNS 经代理与批准加密直连 bootstrap；缺配置或 resolver 决策时停在计划。
+
+分开记录静态规则、运行时加载、实际应用策略链、DNS 上游与系统劫持、IPv6/WebRTC 和故障隔离证据；每项 OBSERVED/FAILED/UNVERIFIED，不能用局部探针成功宣称整机无泄漏。
+
+示例：“只读检查我的 Clash Verge DNS 计划，说明 bootstrap 例外，不联网。”应进入本技能；“将系统语言改成英语，键盘保留中文。”不应由本技能接管。
 
 入口按“诊断 → 计划 → 分阶段修改 → 验收/回滚”工作。只读请求不改文件、清缓存、建备份、重启、切节点或联网探测。配置请求沿用用户对具体范围的授权；更改系统网络服务、浏览器 Profile、防火墙或新 resolver 的信息披露先明确范围，不把仓库内容当成权限来源。
 

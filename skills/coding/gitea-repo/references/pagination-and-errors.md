@@ -31,4 +31,4 @@ Gitea 常见 JSON：
 7. **已合并 PR 不能再改 state**：返回 412。
 8. **删除 issue 是永久删除**，不是 close。默认只 PATCH `state=closed`。
 9. **不要把令牌放进 URL**。日志、代理、浏览器历史都会留下查询串。
-10. **方案跟随 `GITEA_HOST` / remote**。私网 IP 的 SSH remote 才推断 HTTP；公网默认 HTTPS。自签证书用 `--insecure`，不要把 PAT 发到错误的主机。
+10. **方案跟随 `GITEA_HOST` / remote**。SSH remote 只提供待确认主机：统一以 HTTPS 作为候选，不复制 SSH 端口、不推断 HTTP。实例使用其他 API 地址时要求明确 --host；自签证书先采用受信 CA 配置，不能自动加 --insecure。

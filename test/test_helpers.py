@@ -19,6 +19,15 @@ exec(compile(GITEA.read_text(encoding="utf-8"), str(GITEA), "exec"), api)
 
 
 class GiteaTests(unittest.TestCase):
+    def test_ssh_never_infers_plaintext_or_reuses_transport_port(self):
+        for remote, expected in [
+            ("git@10.0.0.2:team/repo.git", ("https://10.0.0.2", "team", "repo")),
+            ("ssh://git@10.0.0.2:2222/team/repo.git", ("https://10.0.0.2", "team", "repo")),
+            ("ssh://git@[::1]:2222/team/repo.git", ("https://[::1]", "team", "repo")),
+        ]:
+            with self.subTest(remote=remote):
+                self.assertEqual(api["parse_remote_url"](remote), expected)
+
     def test_label_lookup_uses_later_pages(self):
         calls = []
         labels = [{"name": f"label-{i}", "id": 1000 + i} for i in range(1, 66)]

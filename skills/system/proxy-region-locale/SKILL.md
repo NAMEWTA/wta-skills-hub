@@ -1,10 +1,21 @@
 ---
 name: proxy-region-locale
-description: "按用户指定地点，或明确要求参考现有代理出口，修改 macOS、Windows、Linux 的时区、语言与区域格式。只查询出口、处理 Claude Code 区域拒绝、修复代理或 DNS、磁盘清理不适用；区域设置不是网络防泄漏措施。"
+description: 按用户指定地点修改 macOS、Windows、Linux 的时区、语言或区域格式；明确要求时参考现有代理出口。仅查询出口、代理/DNS 排错及服务地区拒绝不适用，区域设置不改变网络路径。
 license: MIT
+compatibility: Requires native target OS configuration access; privilege and login/restart requirements vary by field. Exit-IP lookup requires explicit network approval.
+metadata:
+  author: NAMEWTA
+  wta-format-reviewed: '2026-10-06'
 ---
-
 # 系统时区与区域：字段级修改
+
+## 输入与输出契约
+
+明确目标城市/时区 ID、要改的字段、用户或系统作用域。只改时区就不顺带改语言、键盘、NTP、浏览器或账号国家；不从 IP 推断这些偏好。
+
+逐字段报告原值→新值、实际读回、待登录/重启、未改项与本轮回滚位置。权限不足或修改后发生用户并发改动时停止，不覆盖其他设置。
+
+示例：“把 Windows 当前用户时区设为纽约，只改时区。”应进入本技能；“Claude Code 在美国节点上提示地区错误，请修 DNS 泄漏。”不应由本技能接管。
 
 先确认实际目标主机、系统、版本、当前用户和作用域（当前用户/系统/登录窗口/浏览器）。只读请求不建备份、不改配置。用户只要时区时，不改语言、键盘、NTP、浏览器、账号国家或位置服务。
 

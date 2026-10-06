@@ -1,4 +1,4 @@
 interface:
   display_name: "VS Code 全栈环境"
-  short_description: "确认本机或 Remote Profile 后增量配置扩展与 JSONC"
-  default_prompt: "使用 $vscode-fullstack 处理当前请求；先确认目标和范围，报告证据与未验证项。"
+  short_description: "增量配置 VS Code 全栈 Profile，保留 JSONC 与用户定制"
+  default_prompt: "请使用 $vscode-fullstack：给已确认的 Remote SSH Profile 补 Python 与 Vue 扩展，保留我的 formatter。"

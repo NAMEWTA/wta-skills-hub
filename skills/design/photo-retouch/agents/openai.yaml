@@ -1,4 +1,4 @@
 interface:
   display_name: "照片精准编辑"
-  short_description: "依据实际原图编辑与验收，保留身份和源文件，保留授权边界并如实报告未验证项"
-  default_prompt: "使用 $photo-retouch 处理当前请求；先确认目标和范围，报告证据与未验证项。"
+  short_description: "基于已有照片精准修饰或编写提示词，保留身份与未编辑区域"
+  default_prompt: "请使用 $photo-retouch：只把我上传照片右后方的游客去掉，其他人物和构图保持不变。"

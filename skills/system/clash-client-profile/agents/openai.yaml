@@ -1,4 +1,4 @@
 interface:
   display_name: "Clash 网络与 DNS"
-  short_description: "规则 TUN、DNS 路径与浏览器隐私的分阶段诊断、配置和回滚"
-  default_prompt: "使用 $clash-client-profile 排查规则 TUN 与 DNS 路径，先生成可回滚计划，再分别验证应用、DNS、IPv6 和浏览器。"
+  short_description: "分层诊断 Clash 规则与 DNS 路径，区分静态计划和实际网络证据"
+  default_prompt: "请使用 $clash-client-profile：只读检查我的 Clash Verge DNS 计划，说明 bootstrap 例外，不联网。"

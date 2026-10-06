@@ -1,10 +1,21 @@
 ---
 name: github-repo-steward
-description: "管理个人 GitHub 账号仓库清单、归档、删除与 star，诊断 gh/PAT 认证和权限。用于账号级仓库整理或权限排查；普通代码修改、issue 或 PR 创建不适用。"
+description: 盘点个人 GitHub 仓库和 star，规划或执行具名归档、删除、star/unstar，并诊断 gh/PAT 权限。用于账号级整理；不处理代码修改、普通 issue 或 PR 创建。
 license: MIT
+compatibility: Requires GitHub CLI (gh), confirmed account/host and network; inventory.sh additionally requires Bash.
+metadata:
+  author: NAMEWTA
+  wta-format-reviewed: '2026-10-06'
 ---
-
 # GitHub 仓库管家
+
+## 输入与输出契约
+
+明确账号/host、可见仓库范围与模式（只读盘点、建议、具名执行）。已有清单沿用稳定 OWNER/REPO，不因一次授权扩展到新找到的仓库。
+
+给出可见性/分页覆盖、逐仓库建议或执行对照和未知项；权限结论绑定本次 gh 身份与具体端点，不推广到连接器或另一个 PAT。
+
+示例：“只盘点我个人 GitHub 账号的归档仓库和 star，给整理建议。”应进入本技能；“修复当前项目的 TypeScript 类型错误。”不应由本技能接管。
 
 需要当前环境可用的 gh；现有 inventory.sh 还需要 Bash。先确认实际主机、shell、gh 版本及账号。Windows 没有 Bash 时不把 .sh 当 PowerShell 运行：使用 gh 的原生只读查询，标明与完整盘点脚本的覆盖差异，不自动安装 Git Bash/WSL。
 

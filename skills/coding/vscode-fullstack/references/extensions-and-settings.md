@@ -1,6 +1,6 @@
 # 扩展与设置
 
-这份清单是 `vscode-fullstack` 的唯一扩展和设置来源。ID 以 Marketplace 标识为准。版本不锁死，用与当前 VS Code / `vscode-server` 主版本匹配的 CLI 安装稳定版。
+这份清单是候选参考，不是无条件安装白名单。仅选择本次所需语言和功能；执行时核对官方 Marketplace 的发布者、当前支持版本及弃用信息。已有用户选择优先，不把本清单当成永久最新事实。
 
 ## 缺失才安装
 
@@ -34,34 +34,24 @@ Python 语言服务只安装 `ms-python.python`，让 CLI 拉上它声明的依�
 
 ## 从当前 Profile 移除
 
-仅当它们已经装在当前 Profile 时移除：
+只有确认真实冲突、且用户已批准该扩展的移除时才处理；仅“已经安装”不构成移除授权：
 
 - `rvest.vs-code-prettier-eslint`（和官方 Prettier + ESLint 抢默认格式化器）
 - `pmneo.tsimporter`（和内置 TypeScript 自动导入冲突）
 
 Java 扩展包、Copilot、Git Graph、Path Intellisense、npm Intellisense，以及用户自己的扩展，都不在移除范围内。
 
-## 登记到 Profile
+## 用受支持的 Profile 接口
 
-部分版本的 `code-server --install-extension` 忽略 `--profile`；先核对当前 CLI 帮助和实际落点。遇到这种版本时，安装写的是 `<extensions-dir>/extensions.json`。命名 Profile 常用 `User/profiles/<location>/extensions.json`；默认 Profile 没有这个 location，使用当前版本实际默认清单，不能凭空创建 profiles 子目录。把只出现在前者、且属于「缺失才安装」的条目追加到后者。不要改已有条目的版本。
+先用目标产品的 `--help` 验证 `--profile`、扩展安装/列出支持，确认实际 Profile 名和扩展主机。桌面 VS Code、Remote Server 与第三方 code-server 的版本/能力不能互推。
 
-新条目用 Profile 里已有条目的形状。`identifier.uuid` 和 `metadata.id` 都用 CLI 写下的 `metadata.id`。`location` 只保留 `$mid`、`path`、`scheme`：
+若当前 CLI 忽略或不支持 `--profile`，停在 GUI 的 Profiles/Extensions 工作流或该产品公开支持的导入导出方式。不向 `extensions.json`、内部数据库、UUID/location 清单手写条目来模拟注册；那不是稳定 API，也可能覆盖用户正在做的配置。
 
-```json
-{
-  "identifier": { "id": "<publisher.name>", "uuid": "<metadata.id>" },
-  "version": "<version>",
-  "location": { "$mid": 1, "path": "<extensions-dir>/<relativeLocation>", "scheme": "file" },
-  "relativeLocation": "<relativeLocation>",
-  "metadata": { }
-}
-```
-
-`metadata` 从 CLI 清单原样复制，并补上 `"pinned": false`（如果没有）。写完后确认 ID 不重复，且 `location.path` 是实际目录。
+2026-10-06 核对入口：[VS Code Profiles](https://code.visualstudio.com/docs/configure/profiles)、[命令行](https://code.visualstudio.com/docs/configure/command-line)。这些是产品行为依据；现场仍以已安装版本为准。
 
 ## 设置片段
 
-合并进 Profile `settings.json`。已有键不要删。文件按 JSONC 处理，保留注释、尾逗号和无关设置；用局部补丁或 JSONC 编辑工具增量修改，不使用严格 JSON 整文件重写。`eslint.validate` 和 `emmet.includeLanguages` 与已有值取并集。
+只从下面的候选片段选择本次语言需要的键，再合并进 Profile `settings.json`。已有键不要删。文件按 JSONC 处理，保留注释、尾逗号和无关设置；用局部补丁或 JSONC 编辑工具增量修改，不使用严格 JSON 整文件重写。`eslint.validate` 和 `emmet.includeLanguages` 与已有值取并集。
 
 ```json
 {

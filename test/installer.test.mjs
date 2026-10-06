@@ -1,0 +1,46 @@
+import assert from 'node:assert/strict';
+import { test } from 'node:test';
+import { mkdtempSync,mkdirSync,readFileSync,writeFileSync,readdirSync,rmSync,existsSync,symlinkSync,realpathSync,statSync,chmodSync } from 'node:fs';
+import { join,dirname,resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { tmpdir } from 'node:os';
+import { applyInstall,planInstall,resolveTargets,readTree,safePath } from '../dist/installer.js';
+import { discoverSkills } from '../lib/discover-skills.mjs';
+const ROOT=resolve(dirname(fileURLToPath(import.meta.url)),'..');
+function temp(t){const path=mkdtempSync(join(tmpdir(),'wta installer '));t.after(()=>rmSync(path,{recursive:true,force:true}));return realpathSync(path);}
+function put(root,path,text='fixture'){const dest=join(root,path);mkdirSync(dirname(dest),{recursive:true});writeFileSync(dest,text);return dest;}
+function fixture(t,names=['demo']){const root=temp(t),source=join(root,'source'),home=join(root,'home'),project=join(root,'project');for(const d of [source,home,project])mkdirSync(d);
+ const skills=names.map(name=>({name,file:put(source,`${name}/SKILL.md`,`---\nname: ${name}\ndescription: demo\n---\n# Demo\n`),description:'demo',category:'coding'}));
+ for(const name of names)put(source,`${name}/references/example.md`,'reference');
+ return {root,source,home,project,skills};}
+test('global and project roots match current host conventions and deduplicate',t=>{const f=fixture(t);for(const scope of ['global','project']){const targets=resolveTargets(['codex','claude-code','agents'],scope,f.home,f.project);assert.equal(targets.length,2);const base=scope==='global'?f.home:f.project;assert.deepEqual(targets.map(t=>t.root),[join(base,'.agents','skills'),join(base,'.claude','skills')]);assert.deepEqual(targets[0].agents,['codex','agents']);}});
+test('full directory copying preserves scripts, templates, Unicode and executable bit',t=>{const f=fixture(t);put(f.source,'demo/templates/子目录/file.txt','你好');const executable=put(f.source,'demo/scripts/demo.sh','#!/bin/sh\nexit 0\n');
+ if(process.platform!=='win32') chmodSync(executable,0o755);
+ const targets=resolveTargets(['agents'],'project',f.home,f.project);const plan=planInstall(f.skills,targets);const [result]=applyInstall(plan,'error','0.1.0');assert.equal(result.status,'installed');assert.equal(readFileSync(join(result.destination,'templates/子目录/file.txt'),'utf8'),'你好');assert.ok(existsSync(join(result.destination,'scripts/demo.sh')));if(process.platform!=='win32')assert.ok(statSync(join(result.destination,'scripts/demo.sh')).mode & 0o100);assert.equal(JSON.parse(readFileSync(join(result.destination,'.wta-skills-hub.json'))).version,'0.1.0');assert.ok(!existsSync(join(f.project,'.agents/skills/.wta-skills-hub.lock')));
+});
+test('repeated identical installation skips without rewriting user files',t=>{const f=fixture(t);const targets=resolveTargets(['codex'],'project',f.home,f.project);applyInstall(planInstall(f.skills,targets),'error','1');const file=join(targets[0].root,'demo/SKILL.md');const before=statSync(file).mtimeMs;assert.equal(applyInstall(planInstall(f.skills,targets),'error','1')[0].status,'identical');assert.equal(statSync(file).mtimeMs,before);});
+test('conflict blocks the whole plan before writes; skip preserves customized files',t=>{const f=fixture(t,['a','b']);const targets=resolveTargets(['agents'],'project',f.home,f.project);put(targets[0].root,'a/SKILL.md','custom');const plan=planInstall(f.skills,targets);assert.throws(()=>applyInstall(plan,'error','1'),/同名/);assert.ok(!existsSync(join(targets[0].root,'b')));const results=applyInstall(plan,'skip','1');assert.deepEqual(results.map(r=>r.status),['skipped','installed']);assert.equal(readFileSync(join(targets[0].root,'a/SKILL.md'),'utf8'),'custom');});
+test('explicit replacement saves a complete backup outside every skills discovery root',t=>{const f=fixture(t);const targets=resolveTargets(['codex','claude-code'],'global',f.home,f.project);for(const target of targets){put(target.root,'demo/SKILL.md','old');put(target.root,'demo/user.txt','custom');}const results=applyInstall(planInstall(f.skills,targets),'backup','1');for(const result of results){assert.equal(result.status,'replaced');assert.ok(result.backup.startsWith(join(f.home,'.wta-skills-hub','backups')));assert.equal(readFileSync(join(result.backup,'user.txt'),'utf8'),'custom');assert.ok(!existsSync(join(result.destination,'user.txt')));} });
+test('a failure on the second target rolls back the first and restores both originals',t=>{const f=fixture(t);const targets=resolveTargets(['codex','claude-code'],'project',f.home,f.project);for(const target of targets)put(target.root,'demo/SKILL.md','original');assert.throws(()=>applyInstall(planInstall(f.skills,targets),'backup','1',{beforeCommit:(_e,index)=>{if(index===1)throw new Error('injected failure');}}),/injected/);for(const target of targets){assert.equal(readFileSync(join(target.root,'demo/SKILL.md'),'utf8'),'original');assert.ok(!existsSync(join(target.root,'.wta-skills-hub.lock')));} });
+test('a failure during a fresh multi-skill install leaves no installed skills',t=>{const f=fixture(t,['a','b']);const targets=resolveTargets(['agents'],'project',f.home,f.project);assert.throws(()=>applyInstall(planInstall(f.skills,targets),'error','1',{beforeCommit:(_e,index)=>{if(index===1)throw new Error('fail');}}),/fail/);assert.deepEqual(readdirSync(f.project),[]);});
+test('preflight races are rejected and leave external edits untouched',t=>{const f=fixture(t);const targets=resolveTargets(['agents'],'project',f.home,f.project);const plan=planInstall(f.skills,targets);put(targets[0].root,'demo/SKILL.md','someone else');assert.throws(()=>applyInstall(plan,'error','1'),/目标已变化/);assert.equal(readFileSync(join(targets[0].root,'demo/SKILL.md'),'utf8'),'someone else');});
+test('rollback never deletes external edits made after the first commit',t=>{const f=fixture(t,['a','b']);const targets=resolveTargets(['agents'],'project',f.home,f.project);assert.throws(()=>applyInstall(planInstall(f.skills,targets),'error','1',{beforeCommit:(_e,i)=>{if(i===1){put(targets[0].root,'a/user-change.txt','keep');throw new Error('fail');}}}),/回滚需人工处理/);assert.equal(readFileSync(join(targets[0].root,'a/user-change.txt'),'utf8'),'keep');});
+test('an existing install lock is never stolen or removed',t=>{const f=fixture(t);const targets=resolveTargets(['agents'],'project',f.home,f.project);put(targets[0].root,'.wta-skills-hub.lock','other process');assert.throws(()=>applyInstall(planInstall(f.skills,targets),'error','1'),/安装锁已存在/);assert.equal(readFileSync(join(targets[0].root,'.wta-skills-hub.lock'),'utf8'),'other process');});
+test('source symlink directories are rejected rather than copied or followed',t=>{const f=fixture(t);const external=join(f.root,'external');mkdirSync(external);put(external,'secret','not yours');symlinkSync(external,join(f.source,'demo','escape'),process.platform==='win32'?'junction':'dir');assert.throws(()=>readTree(join(f.source,'demo'),true),/符号链接/);});
+test('a linked target ancestor is rejected including Windows junctions',t=>{const f=fixture(t);const external=join(f.root,'external');mkdirSync(external);symlinkSync(external,join(f.project,'.agents'),process.platform==='win32'?'junction':'dir');assert.throws(()=>resolveTargets(['codex'],'project',f.home,f.project),/符号链接/);assert.deepEqual(readdirSync(external),[]);});
+test('a file at the target path is not treated as a replaceable directory',t=>{const f=fixture(t);put(f.project,'.agents','file');assert.throws(()=>resolveTargets(['codex'],'project',f.home,f.project),/非目录/);});
+test('skill traversal and reserved identifiers are rejected',t=>{const f=fixture(t);const targets=resolveTargets(['agents'],'project',f.home,f.project);for(const name of ['../escape','a/b','synced','anthropic-skills','-bad','a--b'])assert.throws(()=>planInstall([{...f.skills[0],name}],targets),/非法技能/);assert.throws(()=>safePath(f.project,join(f.root,'elsewhere')),/越界/);});
+test('all ten real skills install independently with their licenses and complete resources',t=>{const home=temp(t);const target=resolveTargets(['agents'],'global',home,home);for(const skill of discoverSkills(ROOT).skills){const [result]=applyInstall(planInstall([skill],target),'error','1');const files=readTree(result.destination).map(f=>f.path);assert.ok(files.includes('SKILL.md'));assert.ok(files.includes('LICENSE'));assert.ok(files.includes('agents/openai.yaml'));assert.deepEqual(files,readTree(dirname(skill.file),true).map(f=>f.path));}});
+
+test('an identical-only plan rechecks the target before reporting success', (t) => {
+  const root = mkdtempSync(join(tmpdir(), 'wta-stale-'));
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const source = join(root, 'source'); mkdirSync(source);
+  writeFileSync(join(source, 'SKILL.md'), '---\nname: demo\ndescription: demo\n---\n');
+  const skills = [{ name: 'demo', file: join(source, 'SKILL.md'), explicitOnly: false }];
+  const targets = resolveTargets(['agents'], 'project', root, root);
+  applyInstall(planInstall(skills, targets), 'error', '0.1.0');
+  const plan = planInstall(skills, targets);
+  writeFileSync(join(targets[0].root, 'demo', 'SKILL.md'), 'changed after preview');
+  assert.throws(() => applyInstall(plan, 'error', '0.1.0'), /目标已变化/);
+});

@@ -1,23 +1,62 @@
 {
   "name": "@namewta/skills-hub",
-  "version": "0.0.6",
-  "description": "Install WTA agent skills into Grok, Cursor, Codex, Claude Code, Pi, and other Agent Skills-compatible tools.",
+  "version": "0.1.0",
+  "description": "交互式安装 WTA Agent Skills 到 Codex、Claude Code 和通用 .agents/skills。",
   "type": "module",
-  "bin": { "wta-skills-hub": "./bin/wta-skills-hub.mjs" },
-  "files": ["bin", "lib", "skills", "skills.sh.json", "README.md", "LICENSE", "docs", "evals"],
-  "scripts": {
-    "test": "node --test test/cli.test.mjs test/catalog.test.mjs test/helpers.test.mjs test/packaging.test.mjs test/proxy.test.mjs",
-    "validate": "node scripts/validate-skills.mjs",
-    "prepublishOnly": "npm run validate && npm test"
+  "bin": {
+    "wta-skills-hub": "./bin/wta-skills-hub.mjs"
   },
-  "skillsCli": "skills@1.5.26",
-  "engines": { "node": ">=18" },
-  "repository": { "type": "git", "url": "git+https://github.com/NAMEWTA/wta-skills-hub.git" },
+  "files": [
+    "bin",
+    "dist",
+    "lib",
+    "skills",
+    "skills.sh.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "validate": "node scripts/validate-skills.mjs",
+    "pretest": "npm run build",
+    "test": "node --test test/*.test.mjs",
+    "prepack": "npm run build && npm run validate",
+    "prepublishOnly": "npm run typecheck && npm run validate && npm test",
+    "standards:check": "node scripts/check-standards.mjs",
+    "smoke:package": "node scripts/smoke-package.mjs"
+  },
+  "engines": {
+    "node": ">=22.16.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NAMEWTA/wta-skills-hub.git"
+  },
   "homepage": "https://github.com/NAMEWTA/wta-skills-hub#readme",
-  "bugs": { "url": "https://github.com/NAMEWTA/wta-skills-hub/issues" },
-  "keywords": ["skills", "agent-skills", "grok", "cursor", "claude-code", "codex", "npx"],
+  "bugs": {
+    "url": "https://github.com/NAMEWTA/wta-skills-hub/issues"
+  },
+  "keywords": [
+    "skills",
+    "agent-skills",
+    "claude-code",
+    "codex",
+    "clack",
+    "npx"
+  ],
   "author": "Ting'an Wang",
   "license": "MIT",
-  "publishConfig": { "access": "public" },
-  "dependencies": { "yaml": "2.9.1" }
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@clack/prompts": "1.8.1",
+    "citty": "0.2.2",
+    "yaml": "2.9.1"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.4",
+    "typescript": "7.0.2"
+  }
 }

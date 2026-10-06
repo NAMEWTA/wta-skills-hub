@@ -1,10 +1,21 @@
 ---
 name: gitea-repo
-description: "操作已确认的 Gitea/Forgejo 实例的 issue、PR、标签、里程碑和 Release。用户明确指定该平台或当前仓库已确认为该平台时使用；GitHub.com、GitLab 和普通 Git 操作不适用。"
+description: 管理已确认 Gitea/Forgejo 实例的 issue、PR、标签、里程碑和 Release。用于该平台的仓库查询、具名变更和 API 排错；不处理 GitHub/GitLab 或普通 Git 提交。
 license: MIT
+compatibility: Requires Python 3.10+, confirmed Gitea/Forgejo host and scoped credentials; API operations need network access.
+metadata:
+  author: NAMEWTA
+  wta-format-reviewed: '2026-10-06'
 ---
-
 # Gitea / Forgejo 仓库 API
+
+## 输入与输出契约
+
+定位 host、owner/repo、操作、具名对象与授权范围；可从已确认的上下文复用，不重复索取。只有 remote、还未确认平台时先做只读辨认；没有目标 host 就不读取令牌。
+
+查询返回对象编号、筛选条件、页数/覆盖和失败页；写操作另给请求动作、返回 ID 与独立读回状态。未取得响应与明确失败分开，输出中不含令牌。
+
+示例：“列出这台 Forgejo 的 owner/repo 所有关闭 issue，不做修改。”应进入本技能；“给 GitHub 项目提交一个修复 PR。”不应由本技能接管。
 
 需要 Python 3.10+、目标实例网络和相应权限。技能目录以本文件位置为准；Windows 检查 python / py -3，macOS/Linux 检查 python3，路径参数始终作为独立参数传入，不用 shell 字符串拼接。
 

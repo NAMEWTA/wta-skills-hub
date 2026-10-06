@@ -1,10 +1,21 @@
 ---
 name: system-health-audit
-description: "只读审计 Windows、macOS、Linux 开发机的资源、工具链和环境边界，定位慢、空间紧张、WSL/容器与主机混淆，并形成具名优化计划。一般系统健康与性能排查使用；实际 Windows 磁盘删除、代理配置、时区语言修改和编辑器 Profile 配置转交对应技能，不自动调参或清理。"
+description: 只读审计 Windows、macOS、Linux 开发机资源和工具链，区分主机、WSL、容器与远程环境，为变慢或空间紧张提供证据和具名计划。不自动清理、调参、改代理或配置编辑器。
 license: MIT
+compatibility: Bundled baseline requires Python 3.10+ on Windows/macOS/Linux. Default collection is offline, read-only and unprivileged.
+metadata:
+  author: NAMEWTA
+  wta-format-reviewed: '2026-10-06'
 ---
-
 # 跨平台系统健康审计
+
+## 输入与输出契约
+
+取得症状、发生时间、目标环境、受影响工作负载与允许的采样范围。先复用已读证据，再按需要采集短时基线，不用当前容器代替用户电脑。
+
+给出采样窗口/负载、已观察数值、瓶颈假设及证据强弱、具名下一步与未验证项。仅审计时明确零系统修改，不能声称已优化或已提速。
+
+示例：“Windows 开发机最近编译慢，先只读定位瓶颈，不删除东西。”应进入本技能；“直接清理我已经批准的 C 盘缓存目录。”不应由本技能接管。
 
 先确认目标是用户本机、远程主机、WSL 还是容器；工具所在环境不能替代用户设备。默认仅审计。已有明确具体改动授权也不直接套用一键优化；先验证前置条件和回滚。
 
