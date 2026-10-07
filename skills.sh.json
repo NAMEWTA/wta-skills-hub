@@ -35,6 +35,14 @@
       "skills": [
         "photo-retouch"
       ]
+    },
+    {
+      "title": "人生与文章写作",
+      "description": "求职材料与简化技术写作。",
+      "skills": [
+        "job-application",
+        "ste-zh"
+      ]
     }
   ]
 }

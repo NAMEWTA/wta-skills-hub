@@ -27,11 +27,12 @@ function skill(root, category, name, body = "") {
 test("catalog is categorized, complete and excludes the bundled Grok template", () => {
   const result = validateCatalog(ROOT);
   assert.deepEqual(result.errors, []);
-  assert.equal(result.skills.length, 10);
+  assert.equal(result.skills.length, 12);
   assert.equal(result.skills.filter((s) => s.category === "coding").length, 3);
   assert.equal(result.skills.filter((s) => s.category === "system").length, 4);
   assert.equal(result.skills.filter((s) => s.category === "automation").length, 2);
   assert.deepEqual(result.skills.filter((s) => s.category === "design").map((s) => s.name), ["photo-retouch"]);
+  assert.deepEqual(result.skills.filter((s) => s.category === "writing").map((s) => s.name), ["job-application", "ste-zh"]);
 });
 
 test("discovery stops at skill roots, even for malformed embedded templates", (t) => {
@@ -95,7 +96,7 @@ test("CLI lists Chinese categories while preserving selectable skill names", () 
   assert.equal(result.status, 0, result.stderr);
   for (const label of Object.values(CATEGORIES)) assert.ok(result.stdout.includes(label));
   assert.match(result.stdout, /proxy-region-locale/);
-  assert.match(result.stdout, /writing[\s\S]*待扩展/);
+  assert.match(result.stdout, /人生与文章写作 \(writing\)[\s\S]*job-application[\s\S]*ste-zh/);
 });
 
 
@@ -127,7 +128,7 @@ test("all skill UI strings are quoted and behavioral cases cover four distinct r
   const { skills } = discoverSkills(ROOT);
   const cases = JSON.parse(readFileSync(join(ROOT, 'evals/quality-cases.json'), 'utf8'));
   assert.equal(cases.status, 'not-run');
-  assert.equal(new Set(cases.cases.map((entry) => entry.id)).size, 40);
+  assert.equal(new Set(cases.cases.map((entry) => entry.id)).size, 48);
   for (const skill of skills) {
     const text = readFileSync(join(dirname(skill.file), 'agents/openai.yaml'), 'utf8');
     for (const key of ['display_name', 'short_description', 'default_prompt']) assert.match(text, new RegExp(`  ${key}: "[^\\n]+"`));
