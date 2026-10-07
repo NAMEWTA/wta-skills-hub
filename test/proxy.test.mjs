@@ -26,7 +26,7 @@ test("default proxy templates are conservative, valid fragments", () => {
 
 test("UI metadata follows the current OpenAI consumer contract", () => {
   const groups = JSON.parse(readFileSync(join(root, "skills.sh.json"), "utf8")).groupings;
-  const categories = { "代码开发": "coding", "机器优化": "system", "智能体与自动化": "automation", "图像与设计": "design" };
+  const categories = { "代码开发": "coding", "机器优化": "system", "智能体与自动化": "automation", "图像与设计": "design", "人生与文章写作": "writing" };
   for (const group of groups) for (const name of group.skills) {
     const metadata = parse(readFileSync(join(root, "skills", categories[group.title], name, "agents/openai.yaml"), "utf8")).interface;
     const length = [...metadata.short_description].length;
