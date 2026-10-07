@@ -16,15 +16,15 @@ Mihomo DNS 字段含义以读取的上游文档/本机内核为准：
 
 | 字段 | 作用 | 容易遗漏的问题 |
 |---|---|---|
-| `nameserver` | 普通域名的默认上游 | 只填国外 DoH，连接仍可能 DIRECT |
+| `nameserver` | 普通域名的默认上游 | 隐私优先的上游见第 6 节；连接仍可能 DIRECT |
 | `nameserver-policy` | 特定域名优先上游 | 比默认上游优先；旧 `geosite:cn`/system 仍会生效 |
-| `direct-nameserver` | DIRECT 业务出口的域名解析 | `system` 会破坏“全部公网 DNS 经代理”的目标 |
-| `default-nameserver` | 解析 resolver 域名的引导 DNS | 文档要求 IP，可加密；遗漏会引入额外路径 |
-| `proxy-server-nameserver` | 解析代理节点的域名 | 若仍经尚未启动的同一代理，会产生循环依赖 |
+| `direct-nameserver` | DIRECT 业务出口的域名解析 | v1.19.32 解析时固定不走 `respect-rules`。没有 `#组名` 就从默认网卡直连。留空才回落到主解析器；片段在加载文件里丢失后仍留下裸域名，比留空更差。`system` 会把查询交给操作系统 |
+| `default-nameserver` | 解析 resolver 域名的引导 DNS | 必须是纯 IP，可加密。它不继承 `respect-rules`，也不要抄进业务查询 |
+| `proxy-server-nameserver` | 解析代理节点的域名 | 同样不继承 `respect-rules`。若仍经尚未启动的同一代理，会产生循环依赖 |
 | `proxy-server-nameserver-policy` | 节点域名的专门策略 | 可覆盖节点 bootstrap，必须一起审阅 |
-| `respect-rules` | DNS 连接遵守路由规则 | 不等于强制代理；文档要求非空 proxy-server-nameserver |
-| `URL#组名` | 指定 DNS 连接走该代理/组 | 组不存在时可能按接口名解释；必须核对真实组 |
-| `fallback` | 额外解析路径 | 不要假设只有失败才查询；本方案不注入直连 fallback |
+| `respect-rules` | 让 `nameserver`、`fallback`、`nameserver-policy` 在没有片段时使用代理名 `RULES` | 不等于强制代理，也不作用于 direct/default/proxy-server 三类列表。文档要求非空 `proxy-server-nameserver` |
+| `URL#组名` | 指定这条 DNS 连接走该代理或组 | 组名必须与真实组一致；对不上时按网卡名解释。`#` 前有空白时，Mihomo v1.19.32 使用的 YAML 解析器会把后面当成注释 |
+| `fallback` | 与主解析器并行的另一组上游 | `fallback-lazy-query` 默认关闭时，每次查询都会发给回退列表，不是失败后才查。本方案保持空列表，不把国内解析器放进来 |
 | `fake-ip` | 向应用提供映射地址 | 不保证 OS/浏览器解析都到达内核 |
 
 因此自动候选将普通、DIRECT 业务解析和 resolver 引导 DNS 都显式绑定批准组，而不是只依赖 `respect-rules`。IPv4/IPv6 numeric 上游必须自己提供；不会发起本地 DNS 来寻找服务器。
@@ -33,7 +33,7 @@ Mihomo DNS 字段含义以读取的上游文档/本机内核为准：
 
 请求 `"bootstrap": {"mode": "deny"}`。候选使用 `proxy-server-nameserver: ["rcode://refused"]` 拒绝意外的节点域名解析；所有静态节点地址须已确定，动态 providers、域名节点或未知成员会阻止自动计划。不能为通过检查而静默把节点域名替换成旧 IP，证书/SNI、地址变动和订阅更新仍需管理。
 
-`default-nameserver` 与一般上游使用显式 `#组名` 的 numeric 加密地址；不会依赖本地 resolver 去解析 DoH 主机名。无已可用节点时不能保证启动。候选语法依据当前读取的 Mihomo Alpha 解析实现，不保证旧内核；**必须用用户实际版本检查与冷启动测试**。`rcode://refused` 的存在不代表已经完成 OS 防泄漏或 crash 隔离。
+`default-nameserver` 与一般上游使用显式 `#组名` 的 numeric 加密地址；不会依赖本地 resolver 去解析 DoH 主机名。无已可用节点时不能保证启动。候选语法依据 Mihomo v1.19.32 的解析实现，不保证其他版本；**必须用用户实际版本检查与冷启动测试**。`rcode://refused` 的存在不代表已经完成 OS 防泄漏或 crash 隔离。
 
 ### B. encrypted-bootstrap-exception：可审计的启动例外
 
@@ -49,7 +49,7 @@ Mihomo DNS 字段含义以读取的上游文档/本机内核为准：
 
 这里的地址仅演示格式，不是替用户选择。该列表只填经过认可的加密 numeric resolver，不填运营商、`system`、DHCP 或明文地址。仍只用于节点域名；普通、DIRECT 业务和 resolver 引导 DNS 继续显式走代理。**此模式存在直连 DNS 连接，不能报告“全部 DNS 经代理”**；运营商仍看到与 resolver 的连接元数据，resolver 会看到本地出口和节点查询。没有例外授权就阻止应用，不自动降级。
 
-若连批准的 bootstrap 也不可达，先保留原配置并报告受阻。不要关证书校验、随意改端口或回退明文。
+若连批准的 bootstrap 也不可达，先保留原配置并报告受阻。不要关证书校验、随意改端口或自动改用明文。明文只存在于第 6 节的 `plaintext-direct`，而且两项确认缺一不可。
 
 ## 3. 生成、合并与检查
 
@@ -106,6 +106,42 @@ DoT 配置可做静态审查，但该探针仅测试 DoH，不把它称作 DoT �
 
 ## 5. 为什么不能只看网页上的 DNS 国家
 
-检测站通常通过随机域名观察递归 resolver 的出口，可能与业务节点不同。Anycast、转发链、服务商出口和地理数据库可能影响显示。正确证据是：批准 resolver、观察到 DNS 的路由路径、物理接口没有该测试的未授权外发，以及真实应用规则链；IP 所在国家只是线索。
+检测站通常通过随机域名观察递归 resolver 的出口，可能与业务节点不同。Anycast、转发链、服务商出口和地理数据库可能影响显示。出现运营商地址，只说明至少有一条查询没有使用批准的 resolver；不能据此把国内解析器、`system` 或 DHCP 加进覆写。正确证据是：批准 resolver、观察到 DNS 的路由路径、物理接口没有该测试的未授权外发，以及真实应用规则链；IP 所在国家只是线索。
+
+查询没进入内核时，四个 DNS 输入框不会改变结果。`dns-hijack` 只看见已经进入 TUN 的包。发往同网段路由器的 53 端口、另一块网卡上的 DNS、TCP 53 未列入劫持、浏览器自己的 DoH 和 IPv6 DNS，都要按 [系统 DNS](platform-dns.md) 单独看。Windows 会同时查询 TUN 网卡和物理网卡上的 DNS。
 
 不要声称普通 DoH“很难被封”“隐私性最高”或绝对隐藏目的。DoH/DoT 保护到 resolver 的内容，但 resolver 自己可见，连接元数据仍可见；明文 DNS 经加密隧道到 VPN resolver 与本地明文外发也不能混为一谈。清缓存仅去掉旧答案，不改变这些路径。
+
+## 6. 隐私优先：隐藏真实地址并访问 AI
+
+这是用户明确选择的目标。探测和候选都按这一节做；不要把某一台电脑上 53/443/853 的结果写成所有机器的默认值。代理开启后，这一节要填的公共 DNS 只有 Google（`8.8.8.8`、`8.8.4.4`）和 Cloudflare（`1.1.1.1`、`1.0.0.1`），以及这两家自己的域名 DoH。`nameserver`、`default-nameserver`、`direct-nameserver` 的自动候选用它们的 DoT 或 numeric DoH。数字地址在保护组里没有回包时，才按下面的人工步骤改用同一服务商的域名 DoH。`proxy-server-nameserver` 只用同一组里、物理网卡探测实际能通的地址；`fallback` 保持空。阿里云和其他国内公共 DNS 不进入这些字段。打开代理不会改写订阅正文，该订阅的 DNS 覆写关掉后，正文里的国内 DNS 会重新生效。Amazon Route 53 与 Starlink 没有可填进这些字段的公共递归解析器。
+
+`routing: rule` 时，`nameserver` 和 `direct-nameserver` 每条都带 `#保护组`。组名里的空格和符号做百分号编码，YAML 里整段加引号。编码是为了让组名里的空格不把标量拆开；不要在 `#` 前再插入空格或换行。只打开 `respect-rules` 时，没写组名的 `nameserver` 仍按路由规则选择出口，但 `direct-nameserver` 不会。直连规则要先得到真实地址；这条查询若从物理网卡去连 853 或 443，而该网卡到批准解析器的加密端口不通，国内站点会报 `dns resolve failed`。`direct-nameserver` 为空时回落到 `nameserver`，所以 `nameserver` 的组名不能省。加载后的文件若丢掉片段，把 `direct-nameserver` 留空，不要保留裸域名。`proxy-server-nameserver` 不加组名，它才是物理网卡上的节点引导。业务上游已是数字地址时，生成器仍把 `default-nameserver` 钉在批准的加密地址上，不把明文 bootstrap 抄进这个字段。`routing: global` 的业务上游不加组名，由 `respect-rules` 跟随 GLOBAL。
+
+Clash Verge 的 DNS 对话框可以和 `dns_config.yaml` 不一致。回退框里残留的国内 DoH 或未回包主机名，在保存时会写回源文件。先让四个框与磁盘一致，再保存。生成文件可能去掉引号；对 Mihomo v1.19.32，`dns-query#编码` 这种 `#` 前没有空白的标量仍会保留片段。验收读生成文件和内核日志里的实际上游与连接链，不把覆写源或对话框当成已经生效。没有回包的主机名不追加进业务列表。国内 CDN 可能因此不是本地最优，节点关闭时直连网站的解析也会失败；不用运营商 DNS 换回可用性。
+
+组名钉上之后，用一次真实 DNS 交换选定传输。TCP 握手完成，或客户端已经上传数据但下载字节为 0，都还没有答案。同一保护组里，到批准解析器数字地址的 DoT 和 numeric DoH 都没有回包，而普通 HTTPS 网站能完成时，这条节点路径没有把这些解析器地址的响应送回来。下一步改用该服务商自己的域名 DoH，并保留同一个组名：`https://域名/dns-query#%编码后的保护组`。让保护组把域名交给节点解析，不要先在本地换成刚才没有回包的 IP。自动生成器仍只接受数字地址，遇到这种域名会拒绝；域名 DoH 是人工步骤，引导只用已经批准的 bootstrap，不填国内解析器。域名 DoH 也没有回包就停止，保留原来的直连规则，不退回 `system` 或国内 DNS。
+
+### 先探测物理出口，再选 bootstrap
+
+探测必须绑定非 TUN 网卡的源地址。经虚拟网卡成功只说明代理出口通，不能证明节点域名能在隧道建立前解析。
+
+| 物理网卡结果 | 请求里的 bootstrap | 业务 `nameserver` |
+|---|---|---|
+| 批准的 `tls://` 或 numeric DoH 可连通 | `encrypted-direct`，并确认 `acknowledge_direct_bootstrap` | 同一批准集。`routing: rule` 时带 `#保护组`；`routing: global` 时不带组名，靠 `respect-rules` 跟随 GLOBAL |
+| 加密端口超时，且 `tcp://` 到同一公共 IP 的 53 端口对中性域名返回未污染地址 | 用户同时确认两项后才用 `plaintext-direct` | 仍是经代理的加密批准集，不改成明文 |
+| 加密与明文都不通，或明文答案被污染 | 保持原配置，状态为受阻 | 不改 |
+
+`plaintext-direct` 只放入 `proxy-server-nameserver`。路径上能看到节点域名；resolver 能看到本机出口和节点查询。计划标签是 `plaintext-bootstrap-exception`，不能写成“全部 DNS 经代理”。`system`、DHCP、`223.5.5.5`、`223.6.6.6`、`119.29.29.29`、`180.76.76.76`、`114.114.114.114`、`doh.pub`、`alidns.com` 由 `dns_guard` 拒绝。
+
+### 候选里同时固定的行为
+
+- `enhanced-mode: fake-ip`，`prefer-h3: false`，`fallback: []`，`fallback-filter.geoip: false`。回退列表为空时打开 GeoIP 过滤，会把不属于 `geoip-code` 的答案当成污染且无处回退；国家码缺省时界面常显示 CN，不代表策略是中国。不要把出口所在地（例如 TW 或 US）填进这个代码来代替过滤开关。
+- 隐私目标使用 `ipv6: block`，顶层 `ipv6` 与 `dns.ipv6` 都为 false。这只让内核拒绝 IPv6 并停发 AAAA，不关闭操作系统自己的 IPv6。
+- `direct-nameserver` 与本节的 `#保护组` 规则相同，不填 `system`。
+- fake-ip 过滤默认保留原列表。只有用户要求应用不能看到真实地址时，才把过滤缩到本地域名和该平台的连通性检测名，并单独说明被移出的公网域名。
+- `routing: global` 时，`templates/ai-rules.yaml` 的前置规则不生效。AI 是否流畅取决于 GLOBAL 当前叶子、fake-ip 是否避免本地等待，以及 [网络性能](network-performance.md) 里的 UDP/QUIC 对照。规则模式才把这些域名放到保护组前面。
+
+### 复制到另一台电脑
+
+只复制 DNS 覆写源文件，不复制运行时生成配置或整个配置目录。每份订阅都要打开自己的覆写开关；订阅正文里的国内 DNS 在开关关闭时恢复生效。到新电脑后重做物理网卡探测，再生成计划。同网段路由器上的 DNS、应用自带的 DoH，以及节点明文 bootstrap，都不会因为这份文件而变成 Google 或 Cloudflare。

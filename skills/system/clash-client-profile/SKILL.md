@@ -1,11 +1,11 @@
 ---
 name: clash-client-profile
-description: 诊断或配置 Clash Verge Rev、FlClash/Mihomo 的规则 TUN、DNS 与终端/浏览器代理。用于代理无法访问、地区报错、DNS/IPv6/WebRTC 路径疑点及网络回滚；不以改时区或其他 VPN 配置替代排错。
+description: 诊断或配置 Clash Verge Rev、FlClash/Mihomo 的 TUN、按订阅 DNS 覆写、节点 bootstrap 与 AI 域名路径。用于真实 IP/DNS 泄露排查、全局或规则模式、地区报错和网络回滚；不以改时区或其他 VPN 配置替代排错。
 license: MIT
 compatibility: Requires the actual Clash/Mihomo host and version. Bundled helpers need Python 3.10+; YAML input needs PyYAML. Network probes require explicit approval.
 metadata:
   author: NAMEWTA
-  wta-format-reviewed: '2026-10-06'
+  wta-format-reviewed: '2026-10-07'
 ---
 # Clash 网络与 DNS：先保证路径，再验证隐私和可用性
 
@@ -23,9 +23,11 @@ metadata:
 
 默认设计目标：受保护的公网域名查询只发给明确批准的 resolver，DNS 上游连接显式经过已验证的代理组；不因失败改用运营商/system/DHCP/plaintext fallback。代理服务没有提供可用 DNS 时，不虚构“代理专属 DNS”，提出用户可选择的可信上游及其隐私边界。
 
-“全部 DNS 经代理”与“批准仅解析代理节点的加密直连 bootstrap”是不同目标；不能把后一种标为前一种。节点域名、resolver 域名、订阅/provider 刷新都可能有启动依赖。[DNS 方案与脚本](references/dns-workflow.md) 给出严格阻断与显式例外两种方案。
+“全部 DNS 经代理”与“批准仅解析代理节点的直连 bootstrap”是不同目标；不能把后一种标为前一种。节点域名、resolver 域名、订阅/provider 刷新都可能有启动依赖。[DNS 方案与脚本](references/dns-workflow.md) 给出严格阻断、加密直连例外，以及经双重确认的明文节点例外。
 
 规则 TUN 仍然可以把业务流量判为 DIRECT。DNS 路径正确不等于业务路径正确；DoH 加密不等于经代理；AAAA 记录不等于 IPv6 传输；fake-ip 不等于劫持所有解析。地区报错本身不是泄漏证明，也不靠时区、语言、关 TLS 校验或改账号国家解决。
+
+用户要求应用看不到真实 IP/DNS，并稳定访问 AI 时，使用 [DNS 工作流](references/dns-workflow.md) 第 6 节的隐私优先顺序：要填的公共 DNS 只按该节使用 Google 或 Cloudflare，国内解析器不填。规则模式还要给 `nameserver` 和 `direct-nameserver` 加上该节的 `#保护组`。加载后的文件必须仍包含该片段；片段丢失时按该节把 `direct-nameserver` 留空，不保留裸域名。数字地址没有回包时按该节改用同一服务商的域名 DoH，不另选国内解析器。检测站上的运营商地址不能当作把国内解析器加回覆写的理由。这是单独选择的目标，不是某个网站超时后的默认修复。规则模式把 [AI 规则](templates/ai-rules.yaml) 放到保护组前面；`routing: global` 不评估这些规则，业务跟随 GLOBAL 当前叶子。把覆写文件复制到另一台电脑前，先读 [Clash Verge](references/clash-verge.md) 的按订阅开关，并在那台机器的物理网卡上重新探测 bootstrap。未同时确认 `acknowledge_direct_bootstrap` 与 `acknowledge_plaintext_metadata` 时，不得生成 `plaintext-direct`。
 
 ## 先定位、再加载材料
 
@@ -68,7 +70,7 @@ python3 "$SKILL_DIR/scripts/dns_guard.py" audit --config effective-after.json --
 
 保留订阅、节点、密钥、端口、NTP/区域、已有 stack/MTU。不关闭现有代理路径来“强制 TUN”。DNS 劫持覆盖 UDP/TCP 53 的配置与实际流量都要验；局域网 resolver、浏览器 DoH、系统 DoT 和 IPv6 单独处理。禁止未验证监听就在网卡上填写 127.0.0.1，系统 DNS 通常不能填写端口 1053。
 
-只修正已证实的规则优先级和策略链；保护组中 DIRECT、循环、未知 provider 成员会阻止自动候选。新域名补到 [规则模板](templates/ai-rules.yaml) 或 [生成器](scripts/render_rules.py) 的具名计划，不用全局 node/python 代理和宽泛关键词代替定位。
+只修正已证实的规则优先级和策略链；保护组中 DIRECT、循环、未知 provider 成员会阻止自动候选。新域名补到 [规则模板](templates/ai-rules.yaml) 或 [生成器](scripts/render_rules.py) 的具名计划，不用宽泛关键词或临时脚本代理代替已经定位的规则。`routing: global` 只在用户选择隐私优先目标时使用。
 
 ## 交付标准
 

@@ -103,6 +103,52 @@ class PolicyTests(unittest.TestCase):
         c['proxies'].append({'name': 'other', 'type': 'ss', 'server': 'node.example.com'})
         self.assertEqual(g.build_plan(c, g.policy_request(raw_policy()))['status'], 'BLOCKED')
 
+    def test_plaintext_bootstrap_requires_both_acknowledgements_and_tcp_ip(self):
+        p = raw_policy()
+        p['routing'] = 'global'
+        p['ipv6'] = 'block'
+        p['bootstrap'] = {'mode': 'plaintext-direct', 'resolvers': ['tcp://8.8.8.8'],
+                          'acknowledge_direct_bootstrap': True}
+        with self.assertRaises(ValueError):
+            g.policy_request(p)
+        for bad in ('udp://8.8.8.8', '8.8.8.8', 'tcp://223.5.5.5', 'tcp://8.8.8.8:853', 'tls://8.8.8.8'):
+            q = raw_policy()
+            q['bootstrap'] = {'mode': 'plaintext-direct', 'resolvers': [bad],
+                              'acknowledge_direct_bootstrap': True, 'acknowledge_plaintext_metadata': True}
+            with self.subTest(value=bad), self.assertRaises(ValueError):
+                g.policy_request(q)
+
+    def test_global_plaintext_bootstrap_is_labeled_and_not_pinned_to_rule_group(self):
+        p, c = raw_policy(), config()
+        p['routing'] = 'global'
+        p['ipv6'] = 'block'
+        p['bootstrap'] = {'mode': 'plaintext-direct', 'resolvers': ['tcp://8.8.8.8', 'tcp://8.8.4.4'],
+                          'acknowledge_direct_bootstrap': True, 'acknowledge_plaintext_metadata': True}
+        c['proxies'][0]['server'] = 'node.example.com'
+        plan = g.build_plan(c, g.policy_request(p))
+        self.assertEqual(plan['status'], 'REVIEW_REQUIRED')
+        self.assertEqual(plan['privacy_profile'], 'plaintext-bootstrap-exception')
+        dns = plan['candidate_fragment']['dns']
+        self.assertEqual(plan['candidate_fragment']['mode'], 'global')
+        self.assertFalse(plan['candidate_fragment']['ipv6'])
+        self.assertEqual(dns['proxy-server-nameserver'], ['tcp://8.8.8.8', 'tcp://8.8.4.4'])
+        self.assertNotIn('#', dns['nameserver'][0])
+        self.assertFalse(dns['fallback-filter']['geoip'])
+        codes = [x['code'] for x in plan['findings']]
+        self.assertIn('PLAINTEXT_NODE_LOOKUP_VISIBLE_ON_PATH', codes)
+        self.assertIn('GLOBAL_MODE_DOES_NOT_EVALUATE_PREPEND_RULES', codes)
+
+    def test_domestic_resolver_and_geoip_without_fallback_block_audit(self):
+        c = effective()
+        c['dns']['nameserver'] = ['tls://223.5.5.5']
+        codes = [x['code'] for x in g.check_config(c, g.policy_request(raw_policy()))]
+        self.assertIn('DOMESTIC_PUBLIC_RESOLVER', codes)
+        c = effective()
+        c['dns']['fallback'] = []
+        c['dns']['fallback-filter'] = {'geoip': True, 'geoip-code': 'TW'}
+        codes = [x['code'] for x in g.check_config(c, g.policy_request(raw_policy()))]
+        self.assertIn('GEOIP_FILTER_WITHOUT_FALLBACK', codes)
+
     def test_approved_encrypted_bootstrap_is_labeled_exception(self):
         p, c = raw_policy(), config()
         p['bootstrap'] = {'mode': 'encrypted-direct', 'resolvers': ['tls://9.9.9.9'], 'acknowledge_direct_bootstrap': True}

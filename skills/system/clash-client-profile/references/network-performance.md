@@ -13,7 +13,7 @@
 | 现象 | 对照与检查 | 避免的默认动作 |
 |---|---|---|
 | DNS 超时、SERVFAIL | 先分节点 bootstrap 与业务 resolver；检查被客户端保留的 policy/fallback | 换成本地明文 DNS“救急”却继续称隐私通过 |
-| 规则/TUN 下某服务不可达 | 首命中规则、真实叶子、fake-IP 映射、域名可见性、旧连接 | 全局切 global 作为永久修复 |
+| 规则/TUN 下某服务不可达 | 首命中规则、真实叶子、fake-IP 映射、域名可见性、旧连接 | 为这一个服务永久改成 global。用户另行选择的隐私全局模式见 [DNS 工作流](dns-workflow.md) |
 | 小请求可用、大上传卡住 | 同节点的分段传输、MTU/PMTUD、UDP/TCP、TLS/HTTP 对照 | 把 MTU 一律设为 9000/1500/某个网上数值 |
 | QUIC/HTTP3 失败 | 先核对 UDP 支持；经授权仅对目标请求做 TCP/HTTP 版本对照 | 永久禁掉整机所有 UDP/QUIC |
 | 开启代理后 DNS 变慢 | 上游经同代理的延迟/缓存/可用性，避免引导循环 | 为速度自动 race 一个未批准 resolver |

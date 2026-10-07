@@ -11,5 +11,8 @@ prepend:
   - "DOMAIN-SUFFIX,cursor.sh,🔰 节点选择"
   - "DOMAIN-SUFFIX,x.ai,🔰 节点选择"
   - "DOMAIN-SUFFIX,grok.com,🔰 节点选择"
+  - "DOMAIN-SUFFIX,gemini.google.com,🔰 节点选择"
+  - "DOMAIN-SUFFIX,aistudio.google.com,🔰 节点选择"
+  - "DOMAIN-SUFFIX,generativelanguage.googleapis.com,🔰 节点选择"
 append: []
 delete: []

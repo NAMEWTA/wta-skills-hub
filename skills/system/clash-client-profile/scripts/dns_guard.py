@@ -29,9 +29,14 @@ LEAF_TYPES = {"ss", "ssr", "vmess", "vless", "trojan", "socks5", "http", "wiregu
 GROUP_TYPES = {"select", "url-test", "fallback", "load-balance", "relay"}
 DNS_LISTS = ("nameserver", "fallback", "direct-nameserver")
 DNS_MAPS = ("nameserver-policy", "proxy-server-nameserver-policy")
+DOMESTIC_MARKERS = (
+    "system", "dhcp://", "223.5.5.5", "223.6.6.6", "119.29.29.29", "180.76.76.76",
+    "114.114.114.114", "2400:3200::1", "doh.pub", "alidns.com", "dnspod.cn", "dot.pub",
+)
 PENDING = ["installed_core_validation", "effective_config_readback", "application_rule_chain",
-           "os_dns_interception_udp_tcp", "native_ipv6", "browser_doh_webrtc",
-           "cold_start_and_provider_refresh", "sleep_network_change", "crash_isolation", "rollback"]
+           "physical_interface_bootstrap_probe", "os_dns_interception_udp_tcp", "native_ipv6",
+           "browser_doh_webrtc", "cold_start_and_provider_refresh", "sleep_network_change",
+           "crash_isolation", "rollback"]
 
 
 def unique_pairs(pairs):
@@ -133,8 +138,35 @@ def resolver_url(value: object, allow_selector: bool = False) -> tuple[str, str 
         raise ValueError("Expected public numeric HTTPS DoH or tls://IP, no credentials/query/unsafe DNS options") from None
 
 
+def plaintext_bootstrap_url(value: object) -> str:
+    """tcp://public-IPv4-or-IPv6 on port 53 only. Node-name bootstrap, never a business resolver."""
+    try:
+        if not isinstance(value, str) or any(c.isspace() or ord(c) < 32 for c in value):
+            raise ValueError
+        u = urlsplit(value)
+        if (u.scheme != "tcp" or u.username is not None or u.password is not None or u.path
+                or u.query or u.fragment or "#" in value):
+            raise ValueError
+        addr = ipaddress.ip_address(u.hostname or "")
+        if not addr.is_global or "%" in (u.hostname or "") or (u.port is not None and u.port != 53):
+            raise ValueError
+        if domestic_resolver(value):
+            raise ValueError
+        return value
+    except (ValueError, TypeError):
+        raise ValueError("Plaintext bootstrap must be tcp://public-IP with no selector, and not a domestic resolver") from None
+
+
+def domestic_resolver(value: object) -> bool:
+    if not isinstance(value, str):
+        return False
+    low = value.lower()
+    return any(marker in low for marker in DOMESTIC_MARKERS)
+
+
 def policy_request(data: dict) -> dict:
-    if set(data) - {"schema_version", "group", "resolvers", "bootstrap", "ipv6", "targets", "replace_existing_dns_policies"}:
+    if set(data) - {"schema_version", "group", "resolvers", "bootstrap", "ipv6", "targets",
+                    "replace_existing_dns_policies", "routing"}:
         raise ValueError("Unknown policy key; no implicit configuration changes")
     if type(data.get("schema_version")) is not int or data["schema_version"] != 1:
         raise ValueError("Expected policy schema_version 1")
@@ -144,9 +176,19 @@ def policy_request(data: dict) -> dict:
     values = data.get("resolvers")
     if not isinstance(values, list) or not 1 <= len(values) <= 4:
         raise ValueError("Supply 1-4 explicitly selected encrypted resolvers")
-    resolvers = list(dict.fromkeys(resolver_url(v)[0] for v in values))
+    resolvers = []
+    for value in values:
+        url = resolver_url(value)[0]
+        if domestic_resolver(url):
+            raise ValueError("Domestic or system resolver is outside the foreign-public profile")
+        resolvers.append(url)
+    resolvers = list(dict.fromkeys(resolvers))
+    routing = data.get("routing", "rule")
+    if routing not in ("rule", "global"):
+        raise ValueError("routing must be rule or global")
     bootstrap = data.get("bootstrap", {"mode": "deny"})
-    if not isinstance(bootstrap, dict) or set(bootstrap) - {"mode", "resolvers", "acknowledge_direct_bootstrap"}:
+    if not isinstance(bootstrap, dict) or set(bootstrap) - {"mode", "resolvers", "acknowledge_direct_bootstrap",
+                                                            "acknowledge_plaintext_metadata"}:
         raise ValueError("Invalid bootstrap policy")
     mode = bootstrap.get("mode")
     if mode == "deny":
@@ -154,19 +196,36 @@ def policy_request(data: dict) -> dict:
             raise ValueError("deny bootstrap must not include direct resolvers or approval")
         bootstrap = {"mode": "deny", "resolvers": []}
     elif mode == "encrypted-direct":
+        if set(bootstrap) - {"mode", "resolvers", "acknowledge_direct_bootstrap"}:
+            raise ValueError("encrypted-direct does not accept a plaintext acknowledgement")
         vals = bootstrap.get("resolvers")
         if (bootstrap.get("acknowledge_direct_bootstrap") is not True or not isinstance(vals, list)
                 or not 1 <= len(vals) <= 4):
             raise ValueError("Direct bootstrap requires explicit approval and 1-4 numeric encrypted resolvers")
-        bootstrap = {"mode": mode, "resolvers": list(dict.fromkeys(resolver_url(v)[0] for v in vals))}
+        chosen = []
+        for value in vals:
+            url = resolver_url(value)[0]
+            if domestic_resolver(url):
+                raise ValueError("Domestic or system resolver is outside the foreign-public profile")
+            chosen.append(url)
+        bootstrap = {"mode": mode, "resolvers": list(dict.fromkeys(chosen))}
+    elif mode == "plaintext-direct":
+        if set(bootstrap) != {"mode", "resolvers", "acknowledge_direct_bootstrap", "acknowledge_plaintext_metadata"}:
+            raise ValueError("Plaintext bootstrap requires both explicit acknowledgements")
+        vals = bootstrap.get("resolvers")
+        if (bootstrap.get("acknowledge_direct_bootstrap") is not True
+                or bootstrap.get("acknowledge_plaintext_metadata") is not True or not isinstance(vals, list)
+                or not 1 <= len(vals) <= 4):
+            raise ValueError("Plaintext bootstrap requires both approvals and 1-4 tcp://public-IP resolvers")
+        bootstrap = {"mode": mode, "resolvers": list(dict.fromkeys(plaintext_bootstrap_url(v) for v in vals))}
     else:
-        raise ValueError("Choose bootstrap deny or explicitly approved encrypted-direct")
+        raise ValueError("Choose bootstrap deny, encrypted-direct, or explicitly approved plaintext-direct")
     if data.get("ipv6") not in ("tunnel", "block"):
         raise ValueError("Choose IPv6 tunnel or block; OS-level verification is still required")
     targets = data.get("targets")
     if not isinstance(targets, list) or not 1 <= len(targets) <= 64:
         raise ValueError("Supply 1-64 protected domain suffixes")
-    return {"group": group, "resolvers": resolvers, "bootstrap": bootstrap,
+    return {"group": group, "resolvers": resolvers, "bootstrap": bootstrap, "routing": routing,
             "ipv6": data["ipv6"], "targets": list(dict.fromkeys(hostname(t) for t in targets)),
             "replace_existing_dns_policies": data.get("replace_existing_dns_policies", False)}
 
@@ -256,13 +315,20 @@ def check_graph(config: dict, request: dict) -> list:
             finding(issues, "PROVIDER_COLD_START_UNVERIFIED", location="proxy-providers")
     else:
         finding(issues, "DIRECT_BOOTSTRAP_EXCEPTION_NOT_ALL_DNS_PROXIED", "review")
+        if request["bootstrap"]["mode"] == "plaintext-direct":
+            finding(issues, "PLAINTEXT_NODE_LOOKUP_VISIBLE_ON_PATH", "review")
     return issues
 
 
 def check_config(config: dict, request: dict) -> list:
     issues = check_graph(config, request)
-    if config.get("mode") != "rule":
+    routing = request.get("routing", "rule")
+    if routing == "rule" and config.get("mode") != "rule":
         finding(issues, "NOT_RULE_MODE", location="mode")
+    elif routing == "global" and config.get("mode") != "global":
+        finding(issues, "NOT_GLOBAL_MODE", location="mode")
+    elif routing == "global":
+        finding(issues, "GLOBAL_MODE_DOES_NOT_EVALUATE_PREPEND_RULES", "review", "mode")
     dns, tun = config.get("dns"), config.get("tun")
     if not isinstance(dns, dict) or not isinstance(tun, dict):
         finding(issues, "NEED_FULL_EFFECTIVE_DNS_AND_TUN_MAPS")
@@ -304,20 +370,35 @@ def check_config(config: dict, request: dict) -> list:
             finding(issues, "REQUIRED_RESOLVER_LIST_EMPTY", location="dns." + key)
         for idx, value in enumerate(values):
             loc = f"dns.{key}[{idx}]"
-            if key == "proxy-server-nameserver" and request["bootstrap"]["mode"] == "deny" and value == "rcode://refused":
+            if domestic_resolver(value):
+                finding(issues, "DOMESTIC_PUBLIC_RESOLVER", location=loc)
                 continue
-            if key == "proxy-server-nameserver" and request["bootstrap"]["mode"] == "deny":
+            mode = request["bootstrap"]["mode"]
+            if key == "proxy-server-nameserver" and mode == "deny" and value == "rcode://refused":
+                continue
+            if key == "proxy-server-nameserver" and mode == "deny":
                 finding(issues, "BOOTSTRAP_MUST_BE_DENIED", location=loc)
+                continue
+            if key == "proxy-server-nameserver" and mode == "plaintext-direct":
+                try:
+                    if plaintext_bootstrap_url(value) not in request["bootstrap"]["resolvers"]:
+                        finding(issues, "RESOLVER_NOT_APPROVED_OR_NOT_PINNED", location=loc)
+                except ValueError:
+                    finding(issues, "UNSAFE_OR_UNSUPPORTED_DNS_TRANSPORT", location=loc)
                 continue
             try:
                 base, selector = resolver_url(value, allow_selector=True)
-                is_bootstrap = key == "proxy-server-nameserver" and request["bootstrap"]["mode"] == "encrypted-direct"
+                is_bootstrap = key == "proxy-server-nameserver" and mode == "encrypted-direct"
                 allowed = request["bootstrap"]["resolvers"] if is_bootstrap else request["resolvers"]
-                expected = None if is_bootstrap else request["group"]
+                expected = None if is_bootstrap or request.get("routing") == "global" else request["group"]
                 if base not in allowed or selector != expected:
                     finding(issues, "RESOLVER_NOT_APPROVED_OR_NOT_PINNED", location=loc)
             except ValueError:
                 finding(issues, "UNSAFE_OR_UNSUPPORTED_DNS_TRANSPORT", location=loc)
+    fallback = dns.get("fallback", [])
+    filt = dns.get("fallback-filter")
+    if isinstance(filt, dict) and filt.get("geoip") is True and (not isinstance(fallback, list) or not fallback):
+        finding(issues, "GEOIP_FILTER_WITHOUT_FALLBACK", location="dns.fallback-filter.geoip")
     for key in DNS_MAPS:
         values = dns.get(key, {})
         if not isinstance(values, dict):
@@ -343,13 +424,24 @@ def check_config(config: dict, request: dict) -> list:
 
 
 def build_plan(config: dict, request: dict) -> dict:
-    routed = [url + "#" + quote(request["group"], safe="") for url in request["resolvers"]]
-    denied = request["bootstrap"]["mode"] == "deny"
+    routing = request.get("routing", "rule")
+    if routing == "global":
+        routed = list(request["resolvers"])
+    else:
+        routed = [url + "#" + quote(request["group"], safe="") for url in request["resolvers"]]
+    boot = request["bootstrap"]["mode"]
+    if boot == "deny":
+        proxy_ns, profile = ["rcode://refused"], "strict-no-bootstrap"
+    elif boot == "encrypted-direct":
+        proxy_ns, profile = request["bootstrap"]["resolvers"], "encrypted-bootstrap-exception"
+    else:
+        proxy_ns, profile = request["bootstrap"]["resolvers"], "plaintext-bootstrap-exception"
     dns = {"enable": True, "respect-rules": True, "prefer-h3": False,
            "enhanced-mode": "fake-ip", "ipv6": request["ipv6"] == "tunnel",
            "default-nameserver": routed, "nameserver": routed, "direct-nameserver": routed,
-           "proxy-server-nameserver": ["rcode://refused"] if denied else request["bootstrap"]["resolvers"],
-           "nameserver-policy": {}, "proxy-server-nameserver-policy": {}, "fallback": []}
+           "proxy-server-nameserver": proxy_ns,
+           "nameserver-policy": {}, "proxy-server-nameserver-policy": {}, "fallback": [],
+           "fallback-filter": {"geoip": False, "domain": []}}
     tun = {"enable": True, "auto-route": True, "dns-hijack": ["any:53", "tcp://any:53"]}
     if not isinstance(config.get("dns", {}), dict) or not isinstance(config.get("tun", {}), dict):
         raise ValueError("dns/tun must be maps in the effective profile")
@@ -359,11 +451,11 @@ def build_plan(config: dict, request: dict) -> dict:
     if not isinstance(old_hijack, list) or not all(isinstance(x, str) for x in old_hijack):
         raise ValueError("Invalid existing DNS hijack list")
     tun["dns-hijack"] = list(dict.fromkeys(old_hijack + tun["dns-hijack"]))
-    candidate = {"mode": "rule", "ipv6": request["ipv6"] == "tunnel", "dns": dns, "tun": tun}
+    candidate = {"mode": routing, "ipv6": request["ipv6"] == "tunnel", "dns": dns, "tun": tun}
     effective = copy.deepcopy(config)
     for key in ("dns", "tun"):
         effective.setdefault(key, {}).update(candidate[key])
-    effective.update({"mode": "rule", "ipv6": candidate["ipv6"]})
+    effective.update({"mode": routing, "ipv6": candidate["ipv6"]})
     issues = check_config(effective, request)
     finding(issues, "REPLACE_POLICY_MAPS_NOT_RECURSIVE_MERGE", "review")
     if any(config.get("dns", {}).get(k) for k in DNS_MAPS):
@@ -372,11 +464,11 @@ def build_plan(config: dict, request: dict) -> dict:
     finding(issues, "FAKE_IP_RANGE_MUST_NOT_OVERLAP_REAL_LAN_OR_VPN", "review")
     blocked = any(i["severity"] == "error" for i in issues)
     return {"schema_version": 1, "status": "BLOCKED" if blocked else "REVIEW_REQUIRED",
-            "privacy_profile": "strict-no-bootstrap" if denied else "encrypted-bootstrap-exception",
+            "privacy_profile": profile,
             "runtime_verdict": "UNVERIFIED", "findings": issues,
             "candidate_fragment": None if blocked else candidate,
             "rules_extension": None if blocked else {"prepend": ["DOMAIN-SUFFIX," + t + "," + request["group"] for t in request["targets"]], "append": [], "delete": []},
-            "merge_contract": {"replace_maps": ["dns." + k for k in DNS_MAPS],
+            "merge_contract": {"replace_maps": ["dns." + k for k in DNS_MAPS] + ["dns.fallback-filter"],
                                "replace_lists": ["dns." + k for k in DNS_LISTS + ("default-nameserver", "proxy-server-nameserver")],
                                "preserve": ["subscription", "nodes", "credentials", "ports", "dns.listen", "dns.fake-ip-filter", "tun.stack", "tun.mtu", "unrelated rules"],
                                "note": "An empty map in a recursive GUI merge may NOT clear old entries; re-audit the generated effective profile"},
