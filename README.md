@@ -78,7 +78,7 @@ wta-skills-hub --help
 | system | [system-health-audit](skills/system/system-health-audit/SKILL.md) | Windows/macOS/Linux 只读基线及具名优化计划 |
 | system | [windows-dev-disk-cleanup](skills/system/windows-dev-disk-cleanup/SKILL.md) | Windows 具名审计、授权清理、容量验收 |
 | system | [proxy-region-locale](skills/system/proxy-region-locale/SKILL.md) | 按字段调整区域、语言、时区，不代替代理排障 |
-| system | [clash-client-profile](skills/system/clash-client-profile/SKILL.md) | Clash/Mihomo 客户端的规则、TUN、DNS 诊断及回滚 |
+| system | [clash-client-profile](skills/system/clash-client-profile/SKILL.md) | Clash/Mihomo 的 TUN、按订阅 DNS 覆写、AI 路径与回滚 |
 | automation | [herdr](skills/automation/herdr/SKILL.md) | 用户明确选择且已验证的 Herdr 托管终端协作 |
 | automation | [grok-bot-team-steward](skills/automation/grok-bot-team-steward/SKILL.md) | Grok 团队快照、只读差异、具名恢复 |
 | design | [photo-retouch](skills/design/photo-retouch/SKILL.md) | 已有图像的修饰、修复和创意编辑 |
