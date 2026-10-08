@@ -21,7 +21,7 @@ for (const args of [['--wat'],['--skill'],['--global','--project'],['--cwd','x']
 test('--all chooses skills only and does not assume tools, scope, or consent',()=>{const a=parseOptions(['--all']);assert.equal(a.parsed.all,true);assert.equal(a.parsed.yes,undefined);assert.deepEqual(a.agents,[]);assert.equal(a.scope,undefined);});
 test('help, version, text listing, JSON listing need no TTY or client tools',()=>{
  for(const args of [['--help'],['--version'],['--list'],['list','--json']]) {const result=cli(args);assert.equal(result.status,0,result.stderr);}
- const list=JSON.parse(cli(['--list','--json']).stdout);assert.equal(list.skills.length,12);assert.ok(list.skills.every(s=>s.name&&s.description));
+ const list=JSON.parse(cli(['--list','--json']).stdout);assert.equal(list.skills.length,13);assert.ok(list.skills.every(s=>s.name&&s.description));
 });
 test('non-TTY incomplete arguments fail without creating any directories',(t)=>{
  const root=temp(t);for(const args of [[],['--all','--yes'],['-s','herdr','--global','--yes'],['-s','herdr','-a','codex','--project']]) {const result=cli(args,root);assert.equal(result.status,2,result.stderr);assert.deepEqual(readdirSync(root),[]);}
@@ -29,7 +29,7 @@ test('non-TTY incomplete arguments fail without creating any directories',(t)=>{
 test('JSON errors are valid JSON and never launch prompts',(t)=>{const result=cli(['--wat','--json'],temp(t));assert.equal(result.status,2);assert.ok(JSON.parse(result.stdout).error);assert.equal(result.stderr,'');});
 test('dry-run creates nothing and deduplicates Codex and universal',(t)=>{
  const root=temp(t);const result=cli(['--all','-a','codex,agents,claude-code','--project','--dry-run','--json'],root);
- assert.equal(result.status,0,result.stderr);assert.equal(JSON.parse(result.stdout).plan.length,24);assert.deepEqual(readdirSync(root),[]);
+ assert.equal(result.status,0,result.stderr);assert.equal(JSON.parse(result.stdout).plan.length,26);assert.deepEqual(readdirSync(root),[]);
 });
 test('project installation uses the caller path with spaces and Unicode, never an npx child',(t)=>{
  const root=temp(t);const result=cli(['install','herdr','-a','codex,agents,claude-code','--project','-y','--json'],root,{PATH:''});
