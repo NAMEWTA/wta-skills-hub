@@ -1,6 +1,6 @@
 # @namewta/skills-hub
 
-12 个可独立安装的 Agent Skills，以及面向 **Codex、Claude Code、通用 `.agents/skills`** 的中文交互式安装器。
+13 个可独立安装的 Agent Skills，以及面向 **Codex、Claude Code、通用 `.agents/skills`** 的中文交互式安装器。
 
 安装器使用 TypeScript + `@clack/prompts` + `citty`，与 [fastcli](https://github.com/NAMEWTA/fastcli) 的交互技术栈一致。直接复制当前 NPM 包内的技能，不再委托另一个 `npx skills` 下载器；安装不会执行技能脚本或更改 AI 工具权限。
 
@@ -77,6 +77,7 @@ wta-skills-hub --help
 | coding | [vscode-fullstack](skills/coding/vscode-fullstack/SKILL.md) | 指定主机/Profile 的扩展与 JSONC 增量配置 |
 | system | [system-health-audit](skills/system/system-health-audit/SKILL.md) | Windows/macOS/Linux 只读基线及具名优化计划 |
 | system | [windows-dev-disk-cleanup](skills/system/windows-dev-disk-cleanup/SKILL.md) | Windows 具名审计、授权清理、容量验收 |
+| system | [linux-dev-disk-cleanup](skills/system/linux-dev-disk-cleanup/SKILL.md) | Linux 根分区审计、具名授权清理与容量验收 |
 | system | [proxy-region-locale](skills/system/proxy-region-locale/SKILL.md) | 按字段调整区域、语言、时区，不代替代理排障 |
 | system | [clash-client-profile](skills/system/clash-client-profile/SKILL.md) | Clash/Mihomo 的 TUN、按订阅 DNS 覆写、AI 路径与回滚 |
 | automation | [herdr](skills/automation/herdr/SKILL.md) | 用户明确选择且已验证的 Herdr 托管终端协作 |
@@ -115,11 +116,11 @@ npm pack
 npx --package ./namewta-skills-hub-0.1.0.tgz wta-skills-hub
 ```
 
-默认 smoke 从真实 tarball 解包，在仓库外复制已安装的生产依赖、隔离 HOME、禁用可执行 PATH，验证 12 个技能 × 两个独立目标 × 两种作用域。`npm run smoke:package -- --network` 进一步执行全新的 npm 生产安装；它明确需要 registry 网络。CI 在 Windows/macOS/Linux × Node 22/24 执行后者。
+默认 smoke 从真实 tarball 解包，在仓库外复制已安装的生产依赖、隔离 HOME、禁用可执行 PATH，验证 13 个技能 × 两个独立目标 × 两种作用域。`npm run smoke:package -- --network` 进一步执行全新的 npm 生产安装；它明确需要 registry 网络。CI 在 Windows/macOS/Linux × Node 22/24 执行后者。
 
 维护入口：[AGENTS.md](AGENTS.md)、[规范与审计](docs/standards-and-audit.md)、[发布步骤](docs/publishing.md)、[评估说明](evals/README.md)。规范检查 `npm run standards:check` 显式联网；每周工作流检查关键标记与人工核对期限，过期或失败创建/更新一个审查 Issue，绝不自动改技能或发布。每 30 天重新阅读官方页面再更新核对日期；依赖更新由 Dependabot 提交 PR。
 
-离线结构/脚本/安装测试不等于真实 Agent 选择评估或真人设备验收。48 个行为场景保留 `not-run` 状态，历史评估不覆盖。
+离线结构/脚本/安装测试不等于真实 Agent 选择评估或真人设备验收。52 个行为场景保留 `not-run` 状态，历史评估不覆盖。
 
 ## 许可
 

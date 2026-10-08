@@ -19,7 +19,7 @@ function run(exe, args, options = {}) {
 }
 try {
   const output = JSON.parse(run(process.execPath, [npm, 'pack', '--json', '--ignore-scripts', '--pack-destination', temp]));
-  const packed = output.find((entry) => entry.filename && entry.files);
+  const packed = (Array.isArray(output) ? output : Object.values(output)).find((entry) => entry?.filename && entry.files);
   assert.ok(packed, 'supported npm pack JSON response');
   const archive = join(temp, packed.filename);
   let installed;
@@ -47,11 +47,11 @@ try {
   const env = { ...process.env, HOME: home, USERPROFILE: home, CLAUDE_CONFIG_DIR: '', PATH: '', Path: '', NODE_PATH: '' };
   const cli = join(installed, 'bin', 'wta-skills-hub.mjs');
   const listed = JSON.parse(run(process.execPath, [cli, '--list', '--json'], { cwd: project, env }));
-  assert.equal(listed.skills.length, 12);
+  assert.equal(listed.skills.length, 13);
   for (const scope of ['project', 'global']) {
     const args = [cli, '--all', '-a', 'codex,claude-code,agents', `--${scope}`, '--yes', '--json'];
     const first = JSON.parse(run(process.execPath, args, { cwd: project, env }));
-    assert.equal(first.results.length, 24, 'Codex and generic paths must be deduplicated');
+    assert.equal(first.results.length, 26, 'Codex and generic paths must be deduplicated');
     assert.ok(first.results.every((entry) => entry.status === 'installed'));
     const second = JSON.parse(run(process.execPath, args, { cwd: project, env }));
     assert.ok(second.results.every((entry) => entry.status === 'identical'));
@@ -62,5 +62,5 @@ try {
     }
   }
   console.log(JSON.stringify({ passed: true, dependencyMode: network ? 'fresh-npm-production-install' : 'offline-copied-production-closure',
-    version: listed.version, skills: 12, targetDirectories: 48, scopes: ['project', 'global'], duplicatePass: 'identical', sha512: packed.integrity }, null, 2));
+    version: listed.version, skills: 13, targetDirectories: 52, scopes: ['project', 'global'], duplicatePass: 'identical', sha512: packed.integrity }, null, 2));
 } finally { rmSync(temp, { recursive: true, force: true }); }

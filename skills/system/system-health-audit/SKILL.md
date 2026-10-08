@@ -34,7 +34,7 @@ PowerShell 使用 `& python "$SKILL_DIR\scripts\system_audit.py" --path 'C:\'`�
 
 先给基线与瓶颈假设，再给具名动作、预期收益、影响、授权、回滚和验证命令。区分缓存/用户数据/活动运行时，不能凭目录名删除。系统更新、驱动、固件、内核参数、杀毒、swap/pagefile、索引、Docker/WSL 虚拟盘与服务开关都不在一般审计授权内。
 
-Windows 具名空间清理由 windows-dev-disk-cleanup；Clash 网络由 clash-client-profile；系统时区/语言由 proxy-region-locale；VS Code Profile 由 vscode-fullstack。未安装其他技能时交付清单，不假定兄弟目录存在。
+Linux 具名空间清理由 linux-dev-disk-cleanup；Windows 具名空间清理由 windows-dev-disk-cleanup；Clash 网络由 clash-client-profile；系统时区/语言由 proxy-region-locale；VS Code Profile 由 vscode-fullstack。未安装其他技能时交付清单，不假定兄弟目录存在。
 
 ## 完成标准
 

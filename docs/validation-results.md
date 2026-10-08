@@ -85,3 +85,14 @@
 - `npm run validate`：9 项技能的目录、元数据、资源链接与分组通过。
 - `npm test`：30 项中 29 项通过。失败的是既有的 macOS 安装委托用例：临时目录的 `/var` 与进程里的 `/private/var` 不一致，与本技能无关。打包用例确认新技能的模板、两份参考和界面元数据进入包内。
 - 选择场景现为 34 个，行为场景现为 34 个；系统类新增 3 个选择和 4 个行为，只完成编写与人工核对，未做独立模型评估，也没有改这台机器上正在运行的 Clash Verge。
+
+## Linux 开发机清理（2026-10-08）
+
+新增 `system/linux-dev-disk-cleanup`。入口要求清单授权、精确路径和硬停；测量与命令在 `references/linux-cleanup-workflow.md`。选择场景「Ubuntu 的 npm 缓存多大」改为该技能。另增 4 个行为场景，覆盖只读审计、未点名父目录、volume prune 后的挂载核对、内核不参与 autoremove，以及不安排 volume prune 定时任务。`quality-cases.json` 同步增加 4 个 `not-run` 场景。这些场景只完成编写与人工核对，未做独立模型评估或真实清理。
+
+`baseline.json` 仍是分类迁移前的历史指纹，不加入本技能。
+
+- `npm run validate`：13 项技能的目录、元数据、资源链接与分组通过。
+- `npm test`：61/61 通过。打包用例确认该技能的入口、LICENSE、界面元数据和清理工作流进入包。
+- `npm run smoke:package`：离线 tarball 安装 13 个技能、52 个目标目录，重复安装为 identical。本机 npm 12 的 `npm pack --json` 返回对象而不是数组，smoke 同时接受两种形状。
+- 选择场景仍为 34 个，行为场景现为 38 个。工程检查不证明真实磁盘清理的释放量或安全性。
