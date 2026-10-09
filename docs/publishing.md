@@ -8,7 +8,7 @@
 
 在 GitHub 配置同名 environment `npm`，设置所需审查者和适当 tag 规则。配置受组织/套餐能力约束；本轮不会代建认证关系、改账户权限或处理 2FA。新的工作流不再读取长期 `NPM_TOKEN`，也不会缺少凭证后输出“跳过”却让发布显示成功。迁移时先验证 OIDC，再由维护者决定撤销旧 token，不擅自删除现有凭证。
 
-Trusted publishing 使用 GitHub 托管 runner、`id-token: write`。本仓库固定 Node 24 与 npm 11.21.0；当前 staged publishing 至少要求 npm 11.15.0、Node 22.14.0。环境和 workflow 文件名必须与 npm 中的可信关系一致。`actions/setup-node` 不设置 `registry-url`：该项会写入 `_authToken`，npm 会拿这个令牌而不是 OIDC 去访问 registry。2026-10-09 的 `v0.1.1` 因此在 provenance 已签名后返回 `E401`。`npm whoami` 不能验证 OIDC 发布授权；以实际 stage/publish 的结果为准。
+Trusted publishing 使用 GitHub 托管 runner、`id-token: write`。本仓库固定 Node 24 与 npm 11.21.0；当前 staged publishing 至少要求 npm 11.15.0、Node 22.14.0。环境和 workflow 文件名必须与 npm 中的可信关系一致。`actions/setup-node` 不设置 `registry-url`：该项会写入 `_authToken`，npm 会拿这个令牌而不是 OIDC 去访问 registry。2026-10-09 标签推送 run `37881457590` 因此在 provenance 已签名后返回 `E401`。去掉 `registry-url` 后，run `37881775594` 返回 `ENEEDAUTH`：registry 没有接受 `release.yml` / environment `npm` 的 OIDC 身份，stage 没有创建。`npm whoami` 不能验证 OIDC 发布授权；以实际 stage/publish 的结果为准。
 
 ## 常规发版
 
