@@ -28,7 +28,7 @@ python3 -B -m unittest discover -s test -p test_helpers.py -v
 
 `quality-cases.json` 对当时的 10 个技能分别提供 positive、negative、boundary、failure，共 40 个独立场景。初始状态均为 `not-run`，不是已测分数。负例只评估不错误选用技能及不扩大授权，不要求执行该技能的正例工作流。
 
-2026-10-07 为 `job-application` 和 `ste-zh` 各补 4 个同结构场景，状态同样是 `not-run`。2026-10-08 为 `linux-dev-disk-cleanup` 再补 4 个同结构场景，状态同样是 `not-run`。文件里现在共 52 个场景。这次只补齐目录要求，没有运行行为评估。
+2026-10-07 为 `job-application` 和 `ste-zh` 各补 4 个同结构场景，状态同样是 `not-run`。2026-10-08 为 `linux-dev-disk-cleanup` 再补 4 个同结构场景，状态同样是 `not-run`。同日迁入 `optimize-codex-config` 后再补 4 个同结构场景，状态同样是 `not-run`。文件里现在共 56 个场景。这次只补齐目录要求，没有运行行为评估。
 
 在全新会话中仅安装待测技能，记录客户端版本、模型版本、安装作用域、实际发现的 skill、实际 activation、工具调用/结果、是否写入及逐条 rubric 证据。不得用正文 grep 或 mocks 推定行为通过。正例中只有实际发生的条件分支适用；未发生的分支写 `not-applicable`，缺少观测写 `unknown`。
 

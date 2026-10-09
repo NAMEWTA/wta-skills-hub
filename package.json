@@ -1,6 +1,6 @@
 {
   "name": "@namewta/skills-hub",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "交互式安装 WTA Agent Skills 到 Codex、Claude Code 和通用 .agents/skills。",
   "type": "module",
   "bin": {

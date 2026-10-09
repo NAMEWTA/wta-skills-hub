@@ -19,7 +19,8 @@
         "windows-dev-disk-cleanup",
         "linux-dev-disk-cleanup",
         "proxy-region-locale",
-        "clash-client-profile"
+        "clash-client-profile",
+        "optimize-codex-config"
       ]
     },
     {

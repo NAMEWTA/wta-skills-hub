@@ -1,0 +1,4 @@
+interface:
+  display_name: "Codex 配置体检"
+  short_description: "只读体检本机 Codex 配置，诊断 413，确认后才修改。"
+  default_prompt: "请使用 $optimize-codex-config：只读体检本机 Codex 的 config.toml，先不要修改。"

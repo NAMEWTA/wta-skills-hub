@@ -14,7 +14,7 @@ function findPackage(value) {
   }
   return null;
 }
-test("npm package contains thirteen categorized skills and no Python caches", () => {
+test("npm package contains fourteen categorized skills and no Python caches", () => {
   const npmCli = process.env.npm_execpath;
   assert.ok(npmCli, "run packaging tests via npm test");
   const result = spawnSync(process.execPath, [npmCli, "pack", "--dry-run", "--json", "--ignore-scripts"], { cwd: ROOT, encoding: "utf8" });
@@ -22,7 +22,7 @@ test("npm package contains thirteen categorized skills and no Python caches", ()
   const pkg = findPackage(JSON.parse(result.stdout));
   assert.ok(pkg, "supported npm pack JSON shape");
   const paths = pkg.files.map((file) => file.path);
-  assert.equal(paths.filter((path) => /^skills\/[^/]+\/[^/]+\/SKILL\.md$/.test(path)).length, 13);
+  assert.equal(paths.filter((path) => /^skills\/[^/]+\/[^/]+\/SKILL\.md$/.test(path)).length, 14);
   for (const resource of ["SKILL.md", "LICENSE", "agents/openai.yaml", "references/linux-cleanup-workflow.md"]) {
     assert.ok(paths.includes(`skills/system/linux-dev-disk-cleanup/${resource}`));
   }
@@ -36,6 +36,9 @@ test("npm package contains thirteen categorized skills and no Python caches", ()
   }
   for (const resource of ["agents/openai.yaml", "references/platforms.md", "scripts/system_audit.py"]) {
     assert.ok(paths.includes(`skills/system/system-health-audit/${resource}`));
+  }
+  for (const resource of ["SKILL.md", "LICENSE", "agents/openai.yaml", "references/configuration-contract.md", "references/troubleshooting.md", "scripts/audit-codex-config.mjs"]) {
+    assert.ok(paths.includes(`skills/system/optimize-codex-config/${resource}`));
   }
   assert.ok(paths.includes("skills/automation/grok-bot-team-steward/templates/snapshot/skills/_SKILL/SKILL.md"));
   for (const platform of ["linux", "macos", "windows"]) {
