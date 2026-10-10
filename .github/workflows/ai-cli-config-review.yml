@@ -1,0 +1,34 @@
+name: AI CLI config review
+on:
+  pull_request:
+    paths:
+      - 'skills/system/optimize-codex-config/**'
+      - 'scripts/build-ai-cli-config-vendor.mjs'
+      - 'test/ai-cli-config*'
+      - '.github/workflows/ai-cli-config-review.yml'
+permissions:
+  contents: read
+jobs:
+  build-review-artifact:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          package-manager-cache: false
+      - name: Fetch pinned parser build dependencies (not a skill runtime action)
+        run: node scripts/build-ai-cli-config-vendor.mjs --fetch
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Assemble private review workspace without Git credentials
+        run: |
+          git ls-files -z | tar --null -T - -cf /tmp/ai-cli-config-review.tar
+          tar -rf /tmp/ai-cli-config-review.tar skills/system/optimize-codex-config/scripts/vendor node_modules
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ai-cli-config-review-workspace
+          path: /tmp/ai-cli-config-review.tar
+          retention-days: 3
