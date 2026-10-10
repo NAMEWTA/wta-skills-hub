@@ -1,103 +1,33 @@
-# Codex Configuration Contract
+# 配置层级与版本契约
 
-在设计或修改 `config.toml`、`auth.json`、模型供应商、权限、Agent、MCP、Hook 或历史配置时完整应用本契约。配置键会随 Codex 版本变化；以已安装 CLI 和当前 [Configuration Reference](https://learn.chatgpt.com/docs/config-file/config-reference) 为最终事实源。
+核对日期：2026-10-10。官方来源与适用范围见 [来源登记](sources.md)。版本和能力必须分别记录；源码 main、网页最新键或测试 fixture 均不证明本机版本已支持。
 
-## 1. 配置归属与事实优先级
+## 发现与有效配置
 
-1. 用户级配置位于 `$CODEX_HOME/config.toml`；profile 文件位于同一目录并通过 `--profile` 选择。
-2. 受信任项目可以使用 `.codex/config.toml` 覆盖项目设置，但 provider、auth、host metadata、通知、profile 选择和 telemetry 等机器级键会被忽略，必须留在用户级配置。
-3. 先读取现有配置、`codex doctor --json`、`codex features list` 和 `codex debug models --bundled`，再核对当前官方参考。API 模型网页上的最大上下文不是本机 Codex 目录的替代品。
-4. 只更改与目标直接相关的键。MCP、Hook、profile、插件、历史兼容项和未知集成默认原样保留，直到有证据证明无效且用户确认删除。
+Codex 用户配置是 `$CODEX_HOME/config.toml`，默认 `~/.codex/config.toml`；Unix 系统默认文件 `/etc/codex/config.toml`。优先级由高到低为 CLI flags / `--config`、受信任项目逐层 `.codex/config.toml`、`--profile` 选择的 `<profile-name>.config.toml`、用户配置、系统默认、内置默认。托管 requirements 是另外的约束，不是用户配置覆盖即可消除。
 
-## 2. 模型与推理
+项目配置不能覆盖 provider/auth、host metadata、通知、profile 选择和 telemetry routing 等机器级设置。运行时将内置隐私控制放用户级；项目 Codex 隐私计划会报告 `requires_user_scope`。项目只设置原生 `tui.status_line` 时，仍须按安装版本核验作用域和信任。
 
-- 从已安装模型目录选择 model，并确认所选 reasoning effort 受支持。常规工作可以从 `medium` 或现有值开始；`high`、`xhigh` 和更高等级只在质量收益能够覆盖延迟与成本时采用。
-- `plan_mode_reasoning_effort` 独立于普通 `model_reasoning_effort`；未设置时使用 Codex 内置 Plan preset。
-- 仅在自定义模型目录确实需要时设置 `model_context_window`。不得为了绕过 compaction 或代理限制而夸大它。
-- `model_auto_compact_token_limit` 是触发阈值，不是服务端请求体限制。降低它会更早、更频繁地压缩，并可能改变成本和上下文质量。
-- `model_auto_compact_token_limit_scope` 默认是 `total`；只有理解 carried prefix 行为后才选择 `body_after_prefix`。
+Claude 依次检查用户 `settings.json`、项目 `.claude/settings.json`、个人项目 `settings.local.json`，更高层还有 CLI flags 和 managed sources。自定义 `CLAUDE_CONFIG_DIR` 必须显式定位。较新版本把 `settings.local.json` 定位到 Git 主工作树根，旧版或 SDK 情况可能不同；参数 `--project` 必须使用已核验的实际加载根，不猜 worktree 或子目录继承。
 
-## 3. 第三方 Responses 供应商
+Claude file-based managed 配置在 macOS `/Library/Application Support/ClaudeCode/`、Linux/WSL `/etc/claude-code/`、Windows `C:\Program Files\ClaudeCode\`；读取 `managed-settings.json` 和排序后的 `managed-settings.d/*.json`。server-managed、MDM/plist、HKLM/HKCU 和 policyHelper 可能具有更高优先级。本实现不执行 helper、不读注册表、不查询服务端；发现文件托管层则停止自动修改并交给管理员审查。不要把“没有文件”推导成“没有托管策略”。
 
-Codex 当前自定义供应商只支持 `responses` wire API。供应商必须兼容 Codex 实际使用的 Responses 请求、SSE 输出、工具项和 compaction 路径；仅兼容 Chat Completions 不够。
+本机报告只覆盖已观察文件和具名控制环境变量。更高层、信任、profile、worktree、启动器和集成所有权必须通过本地能力记录补充人工核对；标记是 `operator-attested-not-auto-probed`，不伪装 CLI 自动验证。选中的 Codex profile 或旧 `[profiles]` 结构需要单独审查，自动基线不擅自迁移它们。
 
-使用存储在 `auth.json` 的 OpenAI-style API key 时，可以采用：
+## 最小编辑与保留
 
-```toml
-model = "gpt-5.6-sol"
-model_provider = "third-party"
-model_reasoning_effort = "high"
-plan_mode_reasoning_effort = "xhigh"
-cli_auth_credentials_store = "file"
+TOML 使用固定版本完整语法解析器与 AST range edits；JSON 使用严格 JSON 校验和维护中的 CST 编辑库，不假定 Claude 接受 JSONC。每次修改都重解析并检查完整语义等价条件，只允许指定路径的预期差异。重复键、损坏语法、原型污染键、父级类型冲突、未知复杂迁移保持 blocked；不得用空模板覆盖损坏文件。
 
-[model_providers.third-party]
-name = "Third Party Responses"
-base_url = "https://relay.example/api-root"
-wire_api = "responses"
-requires_openai_auth = true
-```
+原注释与无关内容保留；从表形式迁移 exporter 时只移除该子树的值和表头，保留无关表及注释。原文件最多 1 MiB；超过限制应单独检查，而不是截断后修复。原文件存在时先确认读取与所有权，私有备份中保存完整原字节；报告和计划不保存完整配置。
 
-`base_url` 必须是供应商声明的 API root。先确认 Codex 最终请求路径，不能机械添加或删除 `/v1`。生产连接优先 HTTPS；HTTP 会在主机到中转之间明文传输凭据和内容。
+模型、reasoning effort、model_context_window、compaction 阈值、Agent 并发、权限、MCP、hooks、历史、provider 和 auth **不在自动写入 allowlist 内**。对应优化依照 [方法](optimization-method.md) 形成单独的明确确认方案，不能向计划 JSON 塞任意 key。
 
-供应商使用独立环境变量时改用：
+## 认证与供应商
 
-```toml
-[model_providers.third-party]
-name = "Third Party Responses"
-base_url = "https://relay.example/api-root"
-wire_api = "responses"
-env_key = "THIRD_PARTY_API_KEY"
-```
+认证文件只读取存在性、类型、权限等元数据，绝不打印、diff、复制内容到计划或用于额度查询。CLI 原生登录和认证存储选择属于独立流程；不强制从文件迁移 keyring，不自行创造 auth schema。
 
-动态 token 可以使用 `[model_providers.<id>.auth]` 下的 command、args、cwd、timeout 和 refresh interval。`auth`、`env_key`、`experimental_bearer_token` 与 `requires_openai_auth` 是互斥认证路线；每个供应商只保留一条。
+供应商 API root、wire API、认证路线、SSE 与 compaction 支持以实际供应商契约和安装版本为准。不要机械添加 `/v1`，也不要把 Chat Completions 兼容误当作 Responses 全兼容。HTTP 风险应提示，不通过关 TLS 校验修复。第三方网关、CC Switch 数据库及远端服务器均不由本技能自动改写。
 
-仅在证据要求时调整 `request_max_retries`、`stream_max_retries` 或 `stream_idle_timeout_ms`。重试不能修复稳定的 401、403、404 或 413。
+## 安全与隐私不是同一开关
 
-## 4. 认证存储
-
-- `cli_auth_credentials_store = "file"` 正式选择 `$CODEX_HOME/auth.json`；`keyring` 选择系统钥匙串；`auto` 由 Codex 决定。三者是偏好，不是安全等级排序。
-- 文件模式下，验证 `auth.json` 是普通文件、权限为 `0600` 且 `codex doctor --json` 报告认证可用。不要读取、打印、diff 或记录其中的 key。
-- 保留已安装 Codex 创建并验证过的 JSON schema。需要重新登录时优先通过 stdin 使用 `codex login --with-api-key`；手工修改只有在当前 schema 已被可靠确认时进行。
-- 自定义 provider 的 command-backed token 和 `env_key` 不应同时把同一 secret 写入 `auth.json` 或 `config.toml`。
-
-## 5. 权限、沙箱与网络
-
-一个保守、可交互的本机基线是：
-
-```toml
-approval_policy = "on-request"
-approvals_reviewer = "auto_review"
-sandbox_mode = "workspace-write"
-
-[sandbox_workspace_write]
-network_access = false
-```
-
-这只是安全起点，不是固定默认。`approval_policy = "never"` 和 `sandbox_mode = "danger-full-access"` 适合用户明确接受风险的受控环境；不要通过 profile 名称暗示它们更安全。
-
-`default_permissions` 与 `sandbox_mode` / `[sandbox_workspace_write]` 是两套选择，不能混合。网络访问只按实际工具需求开放；第三方模型请求由 Codex host 发出，不等同于给沙箱内命令开放任意网络。
-
-## 6. Agent、MCP、Hook 与历史
-
-Agent 配置先确认当前 CLI 支持的键：
-
-```toml
-[agents]
-enabled = true
-max_concurrent_threads_per_session = 4
-default_subagent_model = "gpt-5.6-terra"
-default_subagent_reasoning_effort = "medium"
-```
-
-并发数由 CPU、内存、供应商速率限制和成本共同决定。不要假定四个线程适合所有机器或接口。
-
-- 对每个 MCP 逐项验证 command/path、启动、tool discovery 和审批策略；不因某个 MCP 失败而清理其他 MCP。
-- Hook 按事件和集成所有者保留。两个 Hook 调用不同集成时不是重复；只有调用链、输入和副作用等价时才合并。
-- `history.persistence` 和 `history.max_bytes` 由隐私、恢复需求和磁盘预算决定。修改前验证旧会话与数据库兼容。
-- 审计期间 `config.toml` 指纹变化或目标文件存在已证明的可写句柄时，先关闭写入来源并重新审计；进程名本身不是 writer 证据。修改任务无法取得精确 writer 观测时保持 blocked，且不得覆盖竞争写入。
-
-## 7. 确认包与写入契约
-
-确认包必须列出当前值、目标值、理由、脱敏 diff、保留项、备份路径、验证和回滚。对每个 secret 只写 `<redacted>` 或“存在/不存在”。
-
-确认后在目标目录创建权限正确的临时文件，完成 TOML/JSON 和 Codex 加载验证后原子 rename。写入前再次比较哈希、大小和 mtime；任一变化都使原确认失效。验证失败时恢复备份并重复验证，不留下部分应用状态。
+保留现有审批、沙箱、本地工具安全检查及恢复机制。禁用非必要外部流量不等于开放沙箱内任意网络，也不等于云端模型请求完全离线。宿主保护的文件写入被拒绝后停止，不能用原子 rename、另一个 shell 或脚本绕过宿主权限拒绝。

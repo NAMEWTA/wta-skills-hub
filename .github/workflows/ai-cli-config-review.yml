@@ -1,0 +1,44 @@
+name: AI CLI config review
+on:
+  push:
+    branches: ['feat/ai-cli-config-refactor']
+  pull_request:
+    paths:
+      - 'skills/system/optimize-codex-config/**'
+      - 'scripts/build-ai-cli-config-vendor.mjs'
+      - 'scripts/smoke-package.mjs'
+      - 'test/ai-cli-config*'
+      - 'test/fixtures/ai-cli-config/**'
+      - 'test/packaging.test.mjs'
+      - '.github/workflows/ai-cli-config-review.yml'
+permissions:
+  contents: read
+jobs:
+  offline-regression:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node: [22, 24]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node }}
+          package-manager-cache: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+      - name: Install locked development dependencies without lifecycle scripts
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm run typecheck
+      - run: npm run validate
+      - name: Offline fixtures, failure injection and privacy guards
+        run: npm test
+      - name: Actual tarball and isolated installed skills without registry access
+        run: npm run smoke:package
+      - run: npm pack --dry-run --ignore-scripts

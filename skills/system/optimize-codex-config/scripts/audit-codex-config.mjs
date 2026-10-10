@@ -52,7 +52,8 @@ function usage() {
     "Options:",
     "  --codex-bin <absolute-path>  Codex executable (default: resolve codex from PATH)",
     "  --since-days <number>        Scan recent rollout files (default: 7, range: 1-365)",
-    "  --no-command-probes          Skip Codex CLI and config-writer probes",
+    "  --command-probes             Opt into local CLI/writer probes; review their side effects first",
+    "  --no-command-probes          Skip probes (the default; retained compatibility flag)",
     "  --json                       Emit the schema-v1 JSON report",
     "  -h, --help                   Show this help",
     "",
@@ -66,7 +67,7 @@ function parseArgs(argv) {
     codex_home: null,
     codex_bin: "codex",
     since_days: 7,
-    command_probes: true,
+    command_probes: false,
     json: false,
     help: false,
   };
@@ -79,6 +80,8 @@ function parseArgs(argv) {
       const key = item.slice(2).replaceAll("-", "_");
       options[key] = value;
       index += 1;
+    } else if (item === "--command-probes") {
+      options.command_probes = true;
     } else if (item === "--no-command-probes") {
       options.command_probes = false;
     } else if (item === "--json") {
@@ -444,6 +447,7 @@ function activeConfigWriters(configPath) {
 async function collectSessionFiles(root, cutoff, output = []) {
   let entries;
   try {
+    if (!(await lstat(root)).isDirectory()) return output;
     entries = await readdir(root, { withFileTypes: true });
   } catch (error) {
     if (error?.code === "ENOENT") return output;
@@ -529,7 +533,8 @@ function classifyError(message) {
 
 async function scanSessionFile(file, codexHome, incidents, counters) {
   let lastTokenUsage = null;
-  const input = createReadStream(file.path, { encoding: "utf8" });
+  if (file.bytes === 0) return;
+  const input = createReadStream(file.path, { encoding: "utf8", start: 0, end: Math.min(file.bytes, MAX_SESSION_BYTES) - 1 });
   const lines = createInterface({ input, crlfDelay: Infinity });
   for await (const line of lines) {
     counters.lines_scanned += 1;
@@ -576,6 +581,8 @@ async function scanSessions(codexHome, sinceDays) {
     files_found: allFiles.length,
     files_scanned: 0,
     files_skipped_oversize: 0,
+    bytes_selected: 0,
+    files_skipped_budget: 0,
     files_truncated: allFiles.length > MAX_SESSION_FILES,
     lines_scanned: 0,
     invalid_json_lines: 0,
@@ -586,6 +593,11 @@ async function scanSessions(codexHome, sinceDays) {
       counters.files_skipped_oversize += 1;
       continue;
     }
+    if (counters.bytes_selected + file.bytes > MAX_SESSION_BYTES) {
+      counters.files_skipped_budget += 1;
+      continue;
+    }
+    counters.bytes_selected += file.bytes;
     try {
       await scanSessionFile(file, codexHome, incidents, counters);
       counters.files_scanned += 1;

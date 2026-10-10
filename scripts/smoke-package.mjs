@@ -61,6 +61,20 @@ try {
       assert.ok(existsSync(join(anchor, config, 'skills', name, 'LICENSE')));
     }
   }
-  console.log(JSON.stringify({ passed: true, dependencyMode: network ? 'fresh-npm-production-install' : 'offline-copied-production-closure',
+  // Explicit test invocation AFTER installation: the installer never runs skill code.
+  let configurationDoctors = 0;
+  for (const anchor of [project, home]) for (const config of ['.agents', '.claude']) {
+    const skillCli = join(anchor, config, 'skills', 'optimize-codex-config', 'scripts', 'ai-cli-config.mjs');
+    const codexHome = join(temp, 'absent-codex');
+    const claudeHome = join(temp, 'absent-claude');
+    const report = JSON.parse(run(process.execPath, [skillCli, 'doctor', '--client', 'all',
+      '--codex-home', codexHome, '--claude-home', claudeHome], { cwd: project, env }));
+    assert.equal(report.commands, 'not-run');
+    assert.equal(report.credential_contents, 'not-read');
+    assert.equal(report.clients.length, 2);
+    assert.ok(!existsSync(codexHome) && !existsSync(claudeHome), 'doctor must not initialize user config');
+    configurationDoctors++;
+  }
+  console.log(JSON.stringify({ passed: true, configurationDoctors, dependencyMode: network ? 'fresh-npm-production-install' : 'offline-copied-production-closure',
     version: listed.version, skills: 14, targetDirectories: 56, scopes: ['project', 'global'], duplicatePass: 'identical', sha512: packed.integrity }, null, 2));
 } finally { rmSync(temp, { recursive: true, force: true }); }

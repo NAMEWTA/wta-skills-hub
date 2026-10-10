@@ -1,4 +1,4 @@
-# Codex Provider Troubleshooting
+# AI CLI Configuration and Provider Troubleshooting
 
 当 Codex 出现 HTTP 状态码、SSE、超时或 compaction 故障时完整应用本手册。官方事实分别来自 [Configuration Reference](https://learn.chatgpt.com/docs/config-file/config-reference)、[Authentication](https://learn.chatgpt.com/docs/auth) 和 [Compaction](https://developers.openai.com/api/docs/guides/compaction)。
 
@@ -6,11 +6,11 @@
 
 按以下顺序收集并停止在能够唯一归因的位置：
 
-1. 已安装 Codex 版本、active provider、认证模式和配置加载结果；
+1. 已安装 CLI 版本、实际配置来源、active provider、用户已提供的认证模式和配置加载证据；
 2. 错误状态、响应 content type、代理签名和最终 path 的脱敏形态；
 3. 错误前最近一次 `last_token_usage` 与 `model_context_window`；
-4. 同一接口的最小 Responses 请求、SSE 行为和重试一致性；
-5. 只有具备服务器权限时才查看反向代理与上游日志。
+4. 仅整理用户已有的同一接口 Responses/SSE 证据；不主动发起外部检测；
+5. 服务端日志由具备权限的管理员提供脱敏结果，本技能只交接，不发起远端探测。
 
 报告原始事实和推断的边界。不得用接口 URL、API key、提示词或工具输出充当证据附件。
 
@@ -52,7 +52,7 @@ Nginx 的 `client_max_body_size` 默认是 `1m`。只有实测边界或 `nginx -
 
 ## 4. Compaction 判定
 
-- 以 `codex debug models --bundled` 的 active model 窗口为本机事实，不从 API 产品页反推 Codex 客户端阈值。
+- 以已核验安装版本的本地模型目录为事实；`codex debug models --bundled` 仅在确认该命令存在、无外部副作用且另获授权时使用。不从 API 产品页反推客户端阈值。
 - `total_token_usage` 是会话累计量；诊断某次失败应使用此前最近一次 `last_token_usage`。
 - `model_auto_compact_token_limit` 未设置时使用模型默认；`total` 与 `body_after_prefix` 的计数语义不同，变更时必须记录原值。
 - 远程压缩失败但普通请求成功，优先比较 body 大小、compact 能力和代理路径，不重新认证全部配置。
@@ -77,3 +77,19 @@ verification: <command, exit code, redacted result>
 ```
 
 只有证据支持的层级可以标记为已解决；其余保持 blocker 或 unknown。
+
+
+## 7. Claude 与跨客户端故障
+
+| 症状 | 本机检查 | 停止条件／边界 |
+|---|---|---|
+| 设置存在但无效 | settings.json/local、实际项目/worktree 根、继承 env、managed/CLI override | 不覆盖高优先级托管层，不执行 policyHelper |
+| 状态栏不显示 | JSON 语法、绝对 Node/脚本路径、disableAllHooks、已有 callback | 不自动打开被用户禁用的 hooks |
+| 额度显示 -- | 首次响应、字段支持、两个窗口独立缺失 | 不抓凭据，不假定账号类型，不发送额度请求 |
+| invalid/stale | 输入类型、百分比范围、resets_at 秒、宿主是否提供新状态 | 不用费用或本地 token 猜余额 |
+| 关闭遥测后功能消失 | 功能旗标依赖、Remote Control 等隐私代价 | 不悄悄重开遥测换功能 |
+| 配置改完又恢复 | CC Switch/其他管理器所有权、配置文件竞争编辑 | 不接管数据库，先停止实际写入者再重新计划 |
+| 损坏 TOML/JSON | 完整语法错误、重复键、父级类型冲突 | 不以空模板覆盖；保留原始文件和独立修复方案 |
+| CLI 加载命令在旧版不存在 | 已安装 help/本地文档 | unsupported 与故障分开，不编造命令支持 |
+
+统一退出结果见 [CLI 手册](cli.md)。网络、401/403/429 等外部证据不足保持 unknown；不因为本地静态验证通过就声称远端故障已修复。

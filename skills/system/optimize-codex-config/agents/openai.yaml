@@ -1,4 +1,4 @@
 interface:
-  display_name: "Codex 配置体检"
-  short_description: "只读体检本机 Codex 配置，诊断 413，确认后才修改。"
-  default_prompt: "请使用 $optimize-codex-config：只读体检本机 Codex 的 config.toml，先不要修改。"
+  display_name: "AI CLI 配置维护"
+  short_description: "体检 Codex 与 Claude 配置、隐私及额度状态栏，确认后安全修改并可回滚。"
+  default_prompt: "请使用 $optimize-codex-config：先只读体检本机 Codex CLI 和 Claude Code，规划隐私收敛与原生额度状态栏；展示脱敏 diff，未经本次明确确认不要修改。"
