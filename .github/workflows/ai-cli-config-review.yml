@@ -1,5 +1,7 @@
 name: AI CLI config review
 on:
+  push:
+    branches: ['feat/ai-cli-config-refactor']
   pull_request:
     paths:
       - 'skills/system/optimize-codex-config/**'
@@ -23,7 +25,7 @@ jobs:
       - name: Fetch pinned parser build dependencies (not a skill runtime action)
         run: node scripts/build-ai-cli-config-vendor.mjs --fetch
       - run: npm ci --ignore-scripts --no-audit --no-fund
-      - name: Assemble private review workspace without Git credentials
+      - name: Assemble private review workspace without Git metadata
         run: |
           git ls-files -z | tar --null -T - -cf /tmp/ai-cli-config-review.tar
           tar -rf /tmp/ai-cli-config-review.tar skills/system/optimize-codex-config/scripts/vendor node_modules
