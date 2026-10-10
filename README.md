@@ -80,7 +80,7 @@ wta-skills-hub --help
 | system | [linux-dev-disk-cleanup](skills/system/linux-dev-disk-cleanup/SKILL.md) | Linux 根分区审计、具名授权清理与容量验收 |
 | system | [proxy-region-locale](skills/system/proxy-region-locale/SKILL.md) | 按字段调整区域、语言、时区，不代替代理排障 |
 | system | [clash-client-profile](skills/system/clash-client-profile/SKILL.md) | Clash/Mihomo 的 TUN、按订阅 DNS 覆写、AI 路径与回滚 |
-| system | [optimize-codex-config](skills/system/optimize-codex-config/SKILL.md) | 只读体检本机 Codex 配置、413 与 compaction，确认后才修改 |
+| system | [optimize-codex-config](skills/system/optimize-codex-config/SKILL.md) | Codex / Claude 初始化、隐私与额度状态栏、只读诊断及确认后事务回滚 |
 | automation | [herdr](skills/automation/herdr/SKILL.md) | 用户明确选择且已验证的 Herdr 托管终端协作 |
 | automation | [grok-bot-team-steward](skills/automation/grok-bot-team-steward/SKILL.md) | Grok 团队快照、只读差异、具名恢复 |
 | design | [photo-retouch](skills/design/photo-retouch/SKILL.md) | 已有图像的修饰、修复和创意编辑 |
@@ -90,6 +90,12 @@ wta-skills-hub --help
 分类不是技能名。每个技能携带 `SKILL.md`、`agents/openai.yaml`、完整相对资源和 LICENSE；不依赖根目录 `AGENTS.md` 或另一个已安装技能。Grok 内部快照里的示例 `SKILL.md` 不会被当作额外的可安装技能。
 
 源文件只使用 Agent Skills 通用 frontmatter。Herdr 声明本库的显式调用元数据；Codex 使用 `policy.allow_implicit_invocation: false`，Claude 安装副本增加 `disable-model-invocation: true`。这些是调用策略，不是权限授权。`agents/openai.yaml` 也不等同于 Claude 的 `.claude/agents/*.md` 子智能体定义。
+
+## AI CLI 配置维护
+
+`optimize-codex-config` 保留稳定调用名，已扩展为 Codex CLI / Claude Code 双客户端方法。安装技能不修改客户端配置；使用时从该技能目录运行 `node scripts/ai-cli-config.mjs --help`。默认离线体检和计划，不读取凭据内容、不启动外部检测；Codex 使用原生状态栏，Claude 使用本地 stdin 渲染器。应用必须有安装版本／作用域证据、逐文件脱敏 diff 和本次确认。
+
+Linux/macOS 的自动写入受 writer、锁、指纹、备份及回滚检查约束；原生 Windows 当前提供 doctor/plan/verify，自动变更保持阻断。项目 Claude 使用个人 settings.local.json；Codex 机器级隐私设置不会被偷写到项目或擅自扩大为全局修改。详见 [技能工作流](skills/system/optimize-codex-config/SKILL.md) 和 [实现与验证记录](docs/ai-cli-config-refactor.md)。
 
 ## 升级、冲突和恢复
 

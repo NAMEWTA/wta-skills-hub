@@ -37,7 +37,14 @@ test("npm package contains fourteen categorized skills and no Python caches", ()
   for (const resource of ["agents/openai.yaml", "references/platforms.md", "scripts/system_audit.py"]) {
     assert.ok(paths.includes(`skills/system/system-health-audit/${resource}`));
   }
-  for (const resource of ["SKILL.md", "LICENSE", "agents/openai.yaml", "references/configuration-contract.md", "references/troubleshooting.md", "scripts/audit-codex-config.mjs"]) {
+  for (const resource of ["SKILL.md", "LICENSE", "agents/openai.yaml", "references/configuration-contract.md", "references/troubleshooting.md", "scripts/audit-codex-config.mjs",
+    "scripts/ai-cli-config.mjs", "scripts/lib/document.mjs", "scripts/lib/io.mjs",
+    "scripts/lib/inspect.mjs", "scripts/lib/plan.mjs", "scripts/lib/transaction.mjs", "scripts/lib/writers.mjs",
+    "scripts/adapters/codex.mjs", "scripts/adapters/claude.mjs", "scripts/statusline/claude-statusline.mjs",
+    "scripts/vendor/parsers.mjs", "scripts/vendor/manifest.json", "scripts/vendor/THIRD-PARTY-NOTICES.txt",
+    "scripts/vendor/build-package-lock.json", "assets/capabilities.example.json",
+    "references/cli.md", "references/privacy.md", "references/statusline.md", "references/transactions.md",
+    "references/optimization-method.md", "references/sources.md"]) {
     assert.ok(paths.includes(`skills/system/optimize-codex-config/${resource}`));
   }
   assert.ok(paths.includes("skills/automation/grok-bot-team-steward/templates/snapshot/skills/_SKILL/SKILL.md"));

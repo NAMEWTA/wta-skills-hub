@@ -194,6 +194,7 @@ describe("optimize-codex-config skill", () => {
       const result = runAuditor([
         "--codex-home",
         root,
+        "--command-probes",
         "--codex-bin",
         fakeCodex,
         "--since-days",
@@ -240,7 +241,7 @@ describe("optimize-codex-config skill", () => {
       await chmod(fakeCodex, 0o700);
 
       const result = runAuditor(
-        ["--codex-home", root, "--codex-bin", fakeCodex, "--json"],
+        ["--codex-home", root, "--command-probes", "--codex-bin", fakeCodex, "--json"],
         { ...process.env, PATH: `${fakeBin}:${process.env.PATH ?? ""}` },
       );
       assert.equal(result.status, 0, result.stdout + result.stderr);
@@ -262,7 +263,7 @@ describe("optimize-codex-config skill", () => {
         ].join("\n"),
       );
       const writerResult = runAuditor(
-        ["--codex-home", root, "--codex-bin", fakeCodex, "--json"],
+        ["--codex-home", root, "--command-probes", "--codex-bin", fakeCodex, "--json"],
         { ...process.env, PATH: `${fakeBin}:${process.env.PATH ?? ""}` },
       );
       assert.equal(writerResult.status, 0, writerResult.stdout + writerResult.stderr);
