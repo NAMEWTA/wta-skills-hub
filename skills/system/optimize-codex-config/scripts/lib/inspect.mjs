@@ -9,6 +9,14 @@ import { ConfigError, parseDocument, at } from './document.mjs';
 import { absolute, safePath, metadata, readBounded, fingerprint, sha256, canonical } from './io.mjs';
 
 export const adapters = { codex, claude };
+// Only built-in read-only system paths use macOS's canonical /private/etc.
+// User homes and project paths retain safePath's strict no-symlink contract.
+export function codexSystemPaths(platform = process.platform) {
+  if (platform === 'win32') return { defaults: [], managed: [] };
+  const root = platform === 'darwin' ? '/private/etc/codex' : '/etc/codex';
+  return { defaults: [root + '/config.toml'],
+    managed: [root + '/managed_config.toml', root + '/requirements.toml'] };
+}
 export const rendererSource = fileURLToPath(new URL('../statusline/claude-statusline.mjs', import.meta.url));
 const specKeys = ['client', 'scope', 'project', 'codex_home', 'claude_home', 'mode', 'replace_statusline', 'evidence'];
 export function normalizeSpec(input = {}, env = process.env) {
@@ -77,7 +85,7 @@ async function layer(path, label, format, files) {
 }
 async function managedLayers(client, files) {
   const paths = client === 'codex'
-    ? (process.platform === 'win32' ? [] : ['/etc/codex/managed_config.toml', '/etc/codex/requirements.toml'])
+    ? codexSystemPaths().managed
     : [join(process.platform === 'darwin' ? '/Library/Application Support/ClaudeCode'
       : process.platform === 'win32' ? 'C:\\Program Files\\ClaudeCode' : '/etc/claude-code', 'managed-settings.json')];
   for (const path of paths) await layer(path, client + '-managed', client === 'codex' ? 'toml' : 'json', files);
@@ -111,7 +119,7 @@ export async function inspect(input = {}, { env = process.env } = {}) {
   for (const client of selectedClients(spec)) {
     const { target, rules, runtime, source } = await rulesFor(spec, client);
     const ownFiles = [];
-    if (client === 'codex' && process.platform !== 'win32') await layer('/etc/codex/config.toml', 'codex-system', 'toml', ownFiles);
+    if (client === 'codex') for (const path of codexSystemPaths().defaults) await layer(path, 'codex-system', 'toml', ownFiles);
     const user = await layer(join(spec[client + '_home'], adapters[client].filename), client + '-user', target.format, ownFiles);
     if (spec.project) {
       const dirs = [spec.project];
