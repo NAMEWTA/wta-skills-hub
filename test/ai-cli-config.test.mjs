@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import { mkdtemp, realpath, mkdir, writeFile, readFile, rm, symlink, chmod, readdir, cp, open } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, dirname, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { spawnSync, spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { parseDocument, patchDocument } from '../skills/system/optimize-codex-config/scripts/lib/document.mjs';
@@ -208,9 +208,15 @@ test('plan artifacts are exclusive, integrity-bound and cannot inject a new comm
 test('symlink targets and damaged syntax are blocked without a destructive fallback', async t => {
   const { spec, directory } = await fixture(t, 'codex');
   const external = join(directory, 'external'); await mkdir(external);
+  const sentinel = join(external, 'keep.txt');
+  await writeFile(sentinel, 'external fixture must survive link cleanup');
   await symlink(external, spec.codex_home, process.platform === 'win32' ? 'junction' : 'dir');
   const linked = await createPlan(spec, { env: {} }); assert.equal(linked.ready, false);
-  await rm(spec.codex_home); await mkdir(spec.codex_home);
+  // Directory links/junctions need recursive rm on some supported Node versions.
+  // Prove the link target is not followed or removed by the fixture cleanup.
+  await rm(spec.codex_home, { recursive: true });
+  assert.equal(await readFile(sentinel, 'utf8'), 'external fixture must survive link cleanup');
+  await mkdir(spec.codex_home);
   await put(join(spec.codex_home, 'config.toml'), 'broken = "secret');
   const broken = await createPlan(spec, { env: {} }); assert.equal(broken.ready, false);
   assert.doesNotMatch(JSON.stringify(broken), /secret/);
@@ -285,7 +291,8 @@ test('doctor, plan and renderer make zero prohibited API calls even when failure
   const { spec, directory } = await fixture(t);
   await put(join(spec.codex_home, 'auth.json'), 'secret');
   await put(join(spec.claude_home, '.credentials.json'), 'secret');
-  const guard = join(root, 'test/fixtures/ai-cli-config/deny-runtime.mjs');
+  // --import expects an ESM specifier; Windows drive paths are not URL schemes.
+  const guard = pathToFileURL(join(root, 'test/fixtures/ai-cli-config/deny-runtime.mjs')).href;
   const cleanEnv = { PATH: '', HOME: directory, USERPROFILE: directory };
   for (const command of ['doctor', 'plan']) {
     const run = spawnSync(process.execPath, ['--import', guard, entry, command, '--client', 'all', '--codex-home', spec.codex_home, '--claude-home', spec.claude_home], {
