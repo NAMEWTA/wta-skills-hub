@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Maintainer-only build. Explicit --fetch authorizes npm registry access.
 // Never invoked by the installer, skill, status line, test suite, or prepack.
-import { mkdtemp, mkdir, readFile, writeFile, copyFile, rm } from 'node:fs/promises';
+import { mkdtemp, mkdir, readdir, readFile, writeFile, copyFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -44,7 +44,10 @@ try {
   });
   const notices = [];
   for (const name of ['toml-eslint-parser', 'eslint-visitor-keys', 'jsonc-parser']) {
-    notices.push(name + '@' + packages[name] + '\n' + await readFile(join(work, 'node_modules', name, 'LICENSE'), 'utf8'));
+    const directory = join(work, 'node_modules', name);
+    const filename = (await readdir(directory)).find(item => /^license(?:\.|$)/i.test(item));
+    if (!filename) throw new Error('Required upstream license missing: ' + name);
+    notices.push(name + '@' + packages[name] + '\n' + await readFile(join(directory, filename), 'utf8'));
   }
   await writeFile(join(target, 'THIRD-PARTY-NOTICES.txt'), notices.join('\n\n'));
   await copyFile(join(work, 'package-lock.json'), join(target, 'build-package-lock.json'));
