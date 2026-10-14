@@ -74,7 +74,7 @@ wta-skills-hub --help
 |---|---|---|
 | coding | [gitea-repo](skills/coding/gitea-repo/SKILL.md) | 已确认的 Gitea/Forgejo issue、PR、API 与分页 |
 | coding | [github-repo-steward](skills/coding/github-repo-steward/SKILL.md) | GitHub 账号级仓库、star 和只读权限诊断 |
-| coding | [vscode-fullstack](skills/coding/vscode-fullstack/SKILL.md) | 指定主机/Profile 的扩展与 JSONC 增量配置 |
+| coding | [vscode-fullstack](skills/coding/vscode-fullstack/SKILL.md) | 本机/Remote Profile 统一、已有运行时复用与扩展增量配置 |
 | system | [system-health-audit](skills/system/system-health-audit/SKILL.md) | Windows/macOS/Linux 只读基线及具名优化计划 |
 | system | [windows-dev-disk-cleanup](skills/system/windows-dev-disk-cleanup/SKILL.md) | Windows 具名审计、授权清理、容量验收 |
 | system | [linux-dev-disk-cleanup](skills/system/linux-dev-disk-cleanup/SKILL.md) | Linux 根分区审计、具名授权清理与容量验收 |
