@@ -5,6 +5,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import { parse } from "yaml";
+import { discoverSkills } from "../lib/discover-skills.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 test("proxy and platform helpers pass isolated offline regressions", () => {
@@ -27,7 +28,9 @@ test("default proxy templates are conservative, valid fragments", () => {
 test("UI metadata follows the current OpenAI consumer contract", () => {
   const groups = JSON.parse(readFileSync(join(root, "skills.sh.json"), "utf8")).groupings;
   const categories = { "代码开发": "coding", "机器优化": "system", "智能体与自动化": "automation", "图像与设计": "design", "人生与文章写作": "writing" };
+  const singleFile = new Set(discoverSkills(root).skills.filter((skill) => skill.singleFile).map((skill) => skill.name));
   for (const group of groups) for (const name of group.skills) {
+    if (singleFile.has(name)) continue;
     const metadata = parse(readFileSync(join(root, "skills", categories[group.title], name, "agents/openai.yaml"), "utf8")).interface;
     const length = [...metadata.short_description].length;
     assert.ok(length >= 25 && length <= 64, `${name}: short_description length ${length}`);

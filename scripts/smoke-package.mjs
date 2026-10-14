@@ -58,7 +58,8 @@ try {
     const anchor = scope === 'project' ? project : home;
     for (const { name } of listed.skills) for (const config of ['.agents', '.claude']) {
       assert.ok(existsSync(join(anchor, config, 'skills', name, 'SKILL.md')));
-      assert.ok(existsSync(join(anchor, config, 'skills', name, 'LICENSE')));
+      const bundled = existsSync(join(root, 'skills', listed.skills.find((skill) => skill.name === name).category, name, 'LICENSE'));
+      assert.equal(existsSync(join(anchor, config, 'skills', name, 'LICENSE')), bundled);
     }
   }
   // Explicit test invocation AFTER installation: the installer never runs skill code.

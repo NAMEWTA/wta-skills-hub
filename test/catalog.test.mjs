@@ -130,11 +130,24 @@ test("all skill UI strings are quoted and behavioral cases cover four distinct r
   assert.equal(cases.status, 'not-run');
   assert.equal(new Set(cases.cases.map((entry) => entry.id)).size, 56);
   for (const skill of skills) {
-    const text = readFileSync(join(dirname(skill.file), 'agents/openai.yaml'), 'utf8');
-    for (const key of ['display_name', 'short_description', 'default_prompt']) assert.match(text, new RegExp(`  ${key}: "[^\\n]+"`));
+    if (!skill.singleFile) {
+      const text = readFileSync(join(dirname(skill.file), 'agents/openai.yaml'), 'utf8');
+      for (const key of ['display_name', 'short_description', 'default_prompt']) assert.match(text, new RegExp(`  ${key}: "[^\\n]+"`));
+    }
     const group = cases.cases.filter((entry) => entry.skill === skill.name);
     assert.deepEqual(group.map((entry) => entry.kind).sort(), ['boundary', 'failure', 'negative', 'positive']);
     for (const entry of group) { assert.equal(entry.status, 'not-run'); assert.ok(entry.prompt && entry.assertions.length); }
     assert.equal(group.find((entry) => entry.kind === 'negative').expected_activation, false);
   }
+});
+
+test("single-file skills ship only SKILL.md and reject other resources", (t) => {
+  const root = fixture(t);
+  put(root, "skills.sh.json", JSON.stringify({ groupings: [{ title: CATEGORIES.automation, skills: ["solo"] }] }));
+  put(root, "skills/automation/solo/SKILL.md", "---\nname: solo\ndescription: A real workflow\nmetadata:\n  wta-single-file: 'true'\n---\n# Solo\n");
+  assert.deepEqual(validateCatalog(root).errors, []);
+  put(root, "skills/automation/solo/LICENSE", "MIT");
+  assert.match(validateCatalog(root).errors.join("\n"), /single-file skill must contain only SKILL.md \(found LICENSE\)/);
+  put(root, "skills/automation/solo/SKILL.md", "---\nname: solo\ndescription: A real workflow\nmetadata:\n  wta-single-file: 'yes'\n---\n# Solo\n");
+  assert.match(validateCatalog(root).errors.join("\n"), /wta-single-file must be the string true or false/);
 });

@@ -6,14 +6,14 @@
 
 ## 快速开始
 
-要求 **Node.js 22.16+** 和 npm。以下 registry 命令在 **0.1.2 正式发布到 npm 后**可用；分支修改、构建、创建 PR、GitHub Release、提交 staged package 都不代表 npm 新版本已上线。
+要求 **Node.js 22.16+** 和 npm。以下 registry 命令在 **0.1.3 正式发布到 npm 后**可用；分支修改、构建、创建 PR、GitHub Release、提交 staged package 都不代表 npm 新版本已上线。
 
 ```bash
 # 进入交互菜单
-npx @namewta/skills-hub@0.1.2
+npx @namewta/skills-hub@0.1.3
 
 # 也可把安装器本身装到 npm 全局，再启动菜单
-npm install -g @namewta/skills-hub@0.1.2
+npm install -g @namewta/skills-hub@0.1.3
 wta-skills-hub
 ```
 
@@ -89,7 +89,7 @@ wta-skills-hub --help
 
 分类不是技能名。每个技能携带 `SKILL.md`、`agents/openai.yaml`、完整相对资源和 LICENSE；不依赖根目录 `AGENTS.md` 或另一个已安装技能。Grok 内部快照里的示例 `SKILL.md` 不会被当作额外的可安装技能。
 
-源文件只使用 Agent Skills 通用 frontmatter。Herdr 声明本库的显式调用元数据；Codex 使用 `policy.allow_implicit_invocation: false`，Claude 安装副本增加 `disable-model-invocation: true`。这些是调用策略，不是权限授权。`agents/openai.yaml` 也不等同于 Claude 的 `.claude/agents/*.md` 子智能体定义。
+源文件只使用 Agent Skills 通用 frontmatter。Herdr 声明本库的显式调用元数据，Claude 安装副本增加 `disable-model-invocation: true`；Herdr 同时是单文件技能（`wta-single-file`），只发布 SKILL.md，不带 `agents/openai.yaml`，因此 Codex 侧只靠 description 限定触发。这些是调用策略，不是权限授权。`agents/openai.yaml` 也不等同于 Claude 的 `.claude/agents/*.md` 子智能体定义。
 
 ## AI CLI 配置维护
 
@@ -120,7 +120,7 @@ npm run smoke:package
 npm pack
 
 # 测试实际 tarball，无需发布；首次取运行依赖可能需要网络
-npx --package ./namewta-skills-hub-0.1.2.tgz wta-skills-hub
+npx --package ./namewta-skills-hub-0.1.3.tgz wta-skills-hub
 ```
 
 默认 smoke 从真实 tarball 解包，在仓库外复制已安装的生产依赖、隔离 HOME、禁用可执行 PATH，验证 14 个技能 × 两个独立目标 × 两种作用域。`npm run smoke:package -- --network` 进一步执行全新的 npm 生产安装；它明确需要 registry 网络。CI 在 Windows/macOS/Linux × Node 22/24 执行后者。
