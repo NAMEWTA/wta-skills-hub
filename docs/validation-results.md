@@ -96,3 +96,46 @@
 - `npm test`：61/61 通过。打包用例确认该技能的入口、LICENSE、界面元数据和清理工作流进入包。
 - `npm run smoke:package`：离线 tarball 安装 13 个技能、52 个目标目录，重复安装为 identical。本机 npm 12 的 `npm pack --json` 返回对象而不是数组，smoke 同时接受两种形状。
 - 选择场景仍为 34 个，行为场景现为 38 个。工程检查不证明真实磁盘清理的释放量或安全性。
+
+## VS Code 运行时复用与多端统一（2026-10-14）
+
+本轮维护基于 `NAMEWTA/wta-skills-hub` 提交 `3edce17cb1fa40da69b09fbb1f2d93cba6206382`。保留 `vscode-fullstack` 名称、已有兼容性元数据和历史评估；只修改该技能、目录说明、打包资源断言和新增评估材料，没有再次修改用户的 VS Code 或系统环境。
+
+### 流程提炼与变更
+
+流程为：定位实际主机/Profile/扩展宿主 → 盘点工具入口与项目特例 → 预览差异并保存原状态 → 复用工具、增量修改、按需安装 → 分层读回与功能验收 → 回滚核验和不可达客户端交付。
+
+- [入口](../skills/coding/vscode-fullstack/SKILL.md) 保持 47 行，补充整体统一与单 Profile 任务的范围区分，沿用会话授权，明确停止条件和验收层次。
+- [运行时复用](../skills/coding/vscode-fullstack/references/runtime-reuse.md) 覆盖 Java 语言服务器/项目 JDK、Maven 包装入口、Node/Python 项目选择，以及 Go/gopls/Delve 的兼容性和下载边界，不固化本机路径或工具版本。
+- [Profile 与验收](../skills/coding/vscode-fullstack/references/profiles-and-validation.md) 区分客户端与 Remote 设置、新窗口默认与既有项目关联、配置回滚与注册/二进制恢复，并限定虚拟显示结果的适用范围。
+- [扩展参考](../skills/coding/vscode-fullstack/references/extensions-and-settings.md) 补 Java 与 Remote SSH 候选，去除全量安装命令和重复 standalone staticcheck 默认项，检查包成员/依赖并保留用户禁用状态；已有 formatter 选择继续保留。
+
+### 证据来源与适用范围
+
+2026-10-14 亲自读取旧入口与参考文件：基线 blob 分别为 `d938a503a30c9daeb037ca245a7233a9fff524cf`、`0c342340dbb41dd2dc1ac2898e0deeefb4c48406`。本轮也读取本机已安装的 `redhat.java@1.56.0`、`vscjava.vscode-maven@0.45.3`、`golang.go@0.56.1` 的 `package.json` 设置 schema；这些版本仅作为改进证据，不是技能推荐的固定版本。
+
+此前同日 Ubuntu 整理的私有记录批次为 `vscode-unify/20261014T065825Z`。本轮亲自回读以下报告，未将原始用户配置/路径复制进仓库，也未重跑当时的 GUI 测试：
+
+| 报告 | SHA-256 | 既有报告记载的范围 |
+| --- | --- | --- |
+| `RESULT.txt` | `40c298ff77cbfa718a9f66d655e2638961e0da17f97a87c5a83c1f2ea42e5ff5` | Ubuntu 桌面/远程配置整理、项目版本保留、配置与回滚演练；Windows 客户端尚未实测 |
+| `reports/verification-summary.json` | `30b5d5fe59d9a6c94233bbdc2e392dc7d1bde3495da2368db643a11a9f45e7eb` | Ubuntu VS Code 1.138.0 的 Xvfb/开发扩展宿主中 12 项隔离样例通过；Server 1.108.2 仅配置与注册检查 |
+
+这批记录是修改依据，不是新版 skill 的独立前向评估。官方产品资料的读取日期、链接和版本适用范围分别写在技能参考文件末尾。官网 Java 扩展当前分支与本机安装版本的最低 JDK 要求不同，因此技能要求核对安装版本，未把网页最新要求套用于旧扩展。旧 Java 异常日志不作为当前故障或自动清缓存依据。
+
+### 本轮工程验证
+
+本机 Ubuntu、Node `26.11.1`、npm `12.2.0`；测试只用临时目录、本地依赖和既有离线夹具。
+
+| 检查 | 结果与限制 |
+| --- | --- |
+| `npm run validate` | 14 个技能通过；包含 YAML、名称、分组和资源边界检查 |
+| `npm test` | 67/67 通过；增加该技能 6 项打包资源断言，无新增运行时脚本 |
+| `npm pack --dry-run --ignore-scripts --json` | 通过；入口、LICENSE、UI 元数据和三份参考全部入包 |
+| `npm run smoke:package` | 离线真实 tarball 安装通过；14 个技能、56 个目标目录，重复安装 `identical` |
+| 仅安装 `vscode-fullstack` | 在仓库外含空格/中文的临时项目通过实际 CLI 安装；6 个资源内容逐字节一致、私有权限正确、所有本地引用位于技能内、无兄弟技能，重装 `identical`。不代表宿主已发现或模型已调用 |
+| `skill-creator` 的 `quick_validate.py` | 未通过，修改前后都拒绝原有 `compatibility` 字段。默认 Python 首次因缺 PyYAML 未启动；改用已有系统 Python/PyYAML 后得到同一字段白名单错误。保留符合 [Agent Skills 规范](https://agentskills.io/specification#compatibility-field) 的元数据，未修改外部校验器或安装依赖；仓库校验已通过 |
+| 独立行为/选择评估 | 新增 [12 个场景](../evals/vscode-fullstack-cases.json)：3 个选择、9 个行为，JSON 与 ID 检查通过，实际评估全部 `not-run` |
+| 跨平台与真实设备 | 仓库保留 Windows/macOS/Linux × Node 22/24 CI；本条记录编写时尚未观察本分支远端 CI。未进行新版技能的 Windows/macOS、真实 Remote SSH 或真人设备验收 |
+
+单技能 smoke 的首次临时断言错误要求安装权限完全等于源文件权限，因此失败；核对安装器既有私有权限约定后，改为独立检查字节内容、私有权限和可执行位，复测通过。未因此修改安装器或放宽安装权限。以上结果与早期失败、旧评估分开保留。

@@ -33,3 +33,7 @@ python3 -B -m unittest discover -s test -p test_helpers.py -v
 在全新会话中仅安装待测技能，记录客户端版本、模型版本、安装作用域、实际发现的 skill、实际 activation、工具调用/结果、是否写入及逐条 rubric 证据。不得用正文 grep 或 mocks 推定行为通过。正例中只有实际发生的条件分支适用；未发生的分支写 `not-applicable`，缺少观测写 `unknown`。
 
 每项保存 prompt、输出记录、断言 verdict（pass/fail/unknown/not-applicable）和证据路径。总分只统计有实际证据的场景，同时单列未运行数量；安全边界失败必须独立披露，不能被总体命中率平均掩盖。结果另存新文件，不回填虚构日期或覆盖历史评估。
+
+## 2026-10-14 VS Code 运行时复用与多端统一
+
+[vscode-fullstack-cases.json](vscode-fullstack-cases.json) 新增 3 个选择场景和 9 个行为场景，覆盖客户端/远程作用域、Profile 创建与关联、项目版本选择、扩展包依赖、JSONC 并发编辑、回滚及验收边界。状态全部为 `not-run`；本轮只编写场景并核对指令，没有运行独立模型评估。此前 Ubuntu 环境操作是改进依据，不能算作新版技能的前向测试。旧场景和历史结果保留。
