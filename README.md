@@ -89,7 +89,7 @@ wta-skills-hub --help
 
 分类不是技能名。每个技能携带 `SKILL.md`、`agents/openai.yaml`、完整相对资源和 LICENSE；不依赖根目录 `AGENTS.md` 或另一个已安装技能。Grok 内部快照里的示例 `SKILL.md` 不会被当作额外的可安装技能。
 
-源文件只使用 Agent Skills 通用 frontmatter。Herdr 声明本库的显式调用元数据；Codex 使用 `policy.allow_implicit_invocation: false`，Claude 安装副本增加 `disable-model-invocation: true`。这些是调用策略，不是权限授权。`agents/openai.yaml` 也不等同于 Claude 的 `.claude/agents/*.md` 子智能体定义。
+源文件只使用 Agent Skills 通用 frontmatter。Herdr 声明本库的显式调用元数据，Claude 安装副本增加 `disable-model-invocation: true`；Herdr 同时是单文件技能（`wta-single-file`），只发布 SKILL.md，不带 `agents/openai.yaml`，因此 Codex 侧只靠 description 限定触发。这些是调用策略，不是权限授权。`agents/openai.yaml` 也不等同于 Claude 的 `.claude/agents/*.md` 子智能体定义。
 
 ## AI CLI 配置维护
 
