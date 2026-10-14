@@ -35,6 +35,8 @@
 | grok-bot-team-steward | 对齐 README/INSTALL/CHEATSHEET、steward 与快照协议；移除 `/workspace` 强制假设和整个 Bots 家目录默认导出；文件安装不等于创建/激活 Bot，恢复默认暂停 |
 | photo-retouch | 明确现有可用图像、编辑范围、保留原件和实际输出验收；没有图像/编辑能力不能声称已处理，提示词交付与图像输出分开 |
 
+2026-10-14 更新：herdr 按用户要求合并为单一 SKILL.md（删除 references/），子智能体默认改为 `herdr agent start <name> --kind claude --pane <id> -- --dangerously-skip-permissions`；用户要求受限时去掉该参数。此为用户明确选择的默认值，上表 herdr 行保留为当时的审计记录。
+
 每个入口均补充针对本技能的输入、输出证据、正例和近邻反例。所有技能随包携带 LICENSE；OpenAI UI 短说明、字符串引用和 `$skill` 默认示例统一校验。保留原有有用的深层领域参考，不把所有内容堆进 SKILL.md。
 
 ## CLI 技术选型
