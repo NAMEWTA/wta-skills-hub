@@ -234,10 +234,10 @@ herdr agent start <name> --kind claude --pane <returned-pane-id> -- --dangerousl
 ### 要求 Codex 时
 
 ```bash
-herdr agent start <name> --kind codex --pane <returned-pane-id>
+herdr agent start <name> --kind codex --pane <returned-pane-id> -- --dangerously-bypass-approvals-and-sandbox
 ```
 
-相当于在该窗格运行 `codex`。
+相当于在该窗格运行 `codex --dangerously-bypass-approvals-and-sandbox`。`--dangerously-bypass-approvals-and-sandbox` 必须放在 `--` 之后，作为 Codex 的原生参数传入。
 
 ### 两者通用
 
