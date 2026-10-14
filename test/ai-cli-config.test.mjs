@@ -34,7 +34,7 @@ async function fixture(t, client = 'all') {
   await writeFile(spec.evidence, JSON.stringify({ schema_version: 1, reviewed_at: new Date().toISOString(), clients }));
   return { directory, spec };
 }
-async function put(path, text) { await mkdir(dirname(path), { recursive: true, mode: 0o700 }); await writeFile(path, text); }
+async function put(path, text) { await mkdir(dirname(path), { recursive: true, mode: 0o700 }); await writeFile(path, text, { mode: 0o600 }); }
 async function planFixture(t, client = 'all') { const f = await fixture(t, client); return { ...f, plan: await createPlan(f.spec, { env: {} }) }; }
 const options = plan => ({ confirm: plan.id, quiescent: true, observe: clear, env: {} });
 
@@ -166,6 +166,16 @@ test('existing configs retain unrelated settings and restore exact original byte
   await rollback(plan, options(plan));
   assert.equal(await readFile(join(spec.codex_home, 'config.toml'), 'utf8'), toml);
   assert.equal(await readFile(join(spec.claude_home, 'settings.json'), 'utf8'), json);
+});
+test('shared-writable existing configs remain blocked without changing content or permissions', { skip: process.platform === 'win32' }, async t => {
+  const { spec } = await fixture(t, 'codex');
+  const target = join(spec.codex_home, 'config.toml');
+  await put(target, '# original\n');
+  await chmod(target, 0o660);
+  const plan = await createPlan(spec, { env: {} });
+  await assert.rejects(apply(plan, options(plan)), error => error.code === 'shared_writable_target');
+  assert.equal(await readFile(target, 'utf8'), '# original\n');
+  assert.equal((await metadata(target)).mode, 0o660);
 });
 test('confirmation, busy/unknown writers and stale plans fail before changing config', async t => {
   const { spec } = await fixture(t, 'codex');
