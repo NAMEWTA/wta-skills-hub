@@ -6,14 +6,14 @@
 
 ## 快速开始
 
-要求 **Node.js 22.16+** 和 npm。以下 registry 命令在 **0.1.3 正式发布到 npm 后**可用；分支修改、构建、创建 PR、GitHub Release、提交 staged package 都不代表 npm 新版本已上线。
+要求 **Node.js 22.16+** 和 npm。以下 registry 命令在 **0.1.4 正式发布到 npm 后**可用；分支修改、构建、创建 PR、GitHub Release、提交 staged package 都不代表 npm 新版本已上线。
 
 ```bash
 # 进入交互菜单
-npx @namewta/skills-hub@0.1.3
+npx @namewta/skills-hub@0.1.4
 
 # 也可把安装器本身装到 npm 全局，再启动菜单
-npm install -g @namewta/skills-hub@0.1.3
+npm install -g @namewta/skills-hub@0.1.4
 wta-skills-hub
 ```
 
@@ -121,7 +121,7 @@ npm run smoke:package
 npm pack
 
 # 测试实际 tarball，无需发布；首次取运行依赖可能需要网络
-npx --package ./namewta-skills-hub-0.1.3.tgz wta-skills-hub
+npx --package ./namewta-skills-hub-0.1.4.tgz wta-skills-hub
 ```
 
 默认 smoke 从真实 tarball 解包，在仓库外复制已安装的生产依赖、隔离 HOME、禁用可执行 PATH，验证 15 个技能 × 两个独立目标 × 两种作用域。`npm run smoke:package -- --network` 进一步执行全新的 npm 生产安装；它明确需要 registry 网络。CI 在 Windows/macOS/Linux × Node 22/24 执行后者。
