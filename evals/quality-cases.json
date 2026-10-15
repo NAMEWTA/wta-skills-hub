@@ -717,6 +717,57 @@
         "不回显 secret 或完整 URL"
       ],
       "status": "not-run"
+    },
+    {
+      "id": "orca-positive",
+      "skill": "orca",
+      "kind": "positive",
+      "prompt": "用 Orca CLI 查看当前工作区的终端并读取测试输出，不切换焦点。",
+      "expected_activation": true,
+      "assertions": [
+        "确认 stablyai/Orca 入口和当前主机，读取版本匹配帮助",
+        "先 list 取得完整目标和 handle，限定当前工作区读取",
+        "只读请求不创建终端、不启动 agent、不切换焦点"
+      ],
+      "status": "not-run"
+    },
+    {
+      "id": "orca-negative",
+      "skill": "orca",
+      "kind": "negative",
+      "prompt": "Ubuntu 的 GNOME Orca 屏幕阅读器声音太大，调低朗读音量。",
+      "expected_activation": false,
+      "assertions": [
+        "不选择此 Orca 编辑器技能",
+        "不试运行编辑器 CLI，不操作工作区或智能体"
+      ],
+      "status": "not-run"
+    },
+    {
+      "id": "orca-boundary",
+      "skill": "orca",
+      "kind": "boundary",
+      "prompt": "在 Linux 外部 shell 用 Orca 编辑器 CLI 检查工作区；PATH 上的 orca 是 /usr/bin/orca。",
+      "expected_activation": true,
+      "assertions": [
+        "不执行 GNOME Orca，查找 orca-ide 并确认身份",
+        "入口缺失则说明并停止，不擅自安装或回退别的构建",
+        "不要求 HERDR_ENV，不假装当前 shell 是桌面"
+      ],
+      "status": "not-run"
+    },
+    {
+      "id": "orca-failure",
+      "skill": "orca",
+      "kind": "failure",
+      "prompt": "Orca terminal send 返回 input_accepted 后超时了，继续确认这个任务有没有开始。",
+      "expected_activation": true,
+      "assertions": [
+        "不将接受输入当作 turn_started 或完成",
+        "按同一 request ID 和帮助恢复观察；无可靠重放则先读取",
+        "不重新提交 prompt、不另起重复 agent、不因未知杀进程"
+      ],
+      "status": "not-run"
     }
   ]
 }

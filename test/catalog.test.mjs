@@ -27,10 +27,10 @@ function skill(root, category, name, body = "") {
 test("catalog is categorized, complete and excludes the bundled Grok template", () => {
   const result = validateCatalog(ROOT);
   assert.deepEqual(result.errors, []);
-  assert.equal(result.skills.length, 14);
+  assert.equal(result.skills.length, 15);
   assert.equal(result.skills.filter((s) => s.category === "coding").length, 3);
   assert.equal(result.skills.filter((s) => s.category === "system").length, 6);
-  assert.equal(result.skills.filter((s) => s.category === "automation").length, 2);
+  assert.equal(result.skills.filter((s) => s.category === "automation").length, 3);
   assert.deepEqual(result.skills.filter((s) => s.category === "design").map((s) => s.name), ["photo-retouch"]);
   assert.deepEqual(result.skills.filter((s) => s.category === "writing").map((s) => s.name), ["job-application", "ste-zh"]);
 });
@@ -128,7 +128,7 @@ test("all skill UI strings are quoted and behavioral cases cover four distinct r
   const { skills } = discoverSkills(ROOT);
   const cases = JSON.parse(readFileSync(join(ROOT, 'evals/quality-cases.json'), 'utf8'));
   assert.equal(cases.status, 'not-run');
-  assert.equal(new Set(cases.cases.map((entry) => entry.id)).size, 56);
+  assert.equal(new Set(cases.cases.map((entry) => entry.id)).size, 60);
   for (const skill of skills) {
     if (!skill.singleFile) {
       const text = readFileSync(join(dirname(skill.file), 'agents/openai.yaml'), 'utf8');

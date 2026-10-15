@@ -37,3 +37,7 @@ python3 -B -m unittest discover -s test -p test_helpers.py -v
 ## 2026-10-14 VS Code 运行时复用与多端统一
 
 [vscode-fullstack-cases.json](vscode-fullstack-cases.json) 新增 3 个选择场景和 9 个行为场景，覆盖客户端/远程作用域、Profile 创建与关联、项目版本选择、扩展包依赖、JSONC 并发编辑、回滚及验收边界。状态全部为 `not-run`；本轮只编写场景并核对指令，没有运行独立模型评估。此前 Ubuntu 环境操作是改进依据，不能算作新版技能的前向测试。旧场景和历史结果保留。
+
+## 2026-10-15 Orca 单文件技能
+
+`quality-cases.json` 为 `orca` 增加 positive、negative、boundary、failure 四项，现有条目保持原样，总数变为 60。[orca-cases.json](orca-cases.json) 另有 3 个选择场景和 12 个行为场景，覆盖同名程序、旧新版启动、structured chat、请求重放、远端存活、收件箱 ack、页面归属、发布开关、安装范围、权限拒绝和设备/recipe 边界。全部为 `not-run`；仅编写并检查材料结构，没有独立模型执行，也没有真实账号、浏览器或设备操作。工程测试与来源见 [调研和验证记录](../docs/orca-research-validation.md)。

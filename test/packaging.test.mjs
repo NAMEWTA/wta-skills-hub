@@ -14,7 +14,7 @@ function findPackage(value) {
   }
   return null;
 }
-test("npm package contains fourteen categorized skills and no Python caches", () => {
+test("npm package contains fifteen categorized skills and no Python caches", () => {
   const npmCli = process.env.npm_execpath;
   assert.ok(npmCli, "run packaging tests via npm test");
   const result = spawnSync(process.execPath, [npmCli, "pack", "--dry-run", "--json", "--ignore-scripts"], { cwd: ROOT, encoding: "utf8" });
@@ -22,7 +22,8 @@ test("npm package contains fourteen categorized skills and no Python caches", ()
   const pkg = findPackage(JSON.parse(result.stdout));
   assert.ok(pkg, "supported npm pack JSON shape");
   const paths = pkg.files.map((file) => file.path);
-  assert.equal(paths.filter((path) => /^skills\/[^/]+\/[^/]+\/SKILL\.md$/.test(path)).length, 14);
+  assert.equal(paths.filter((path) => /^skills\/[^/]+\/[^/]+\/SKILL\.md$/.test(path)).length, 15);
+  assert.deepEqual(paths.filter((path) => path.startsWith("skills/automation/orca/")), ["skills/automation/orca/SKILL.md"]);
   for (const resource of ["SKILL.md", "LICENSE", "agents/openai.yaml", "references/extensions-and-settings.md",
     "references/runtime-reuse.md", "references/profiles-and-validation.md"]) {
     assert.ok(paths.includes(`skills/coding/vscode-fullstack/${resource}`));
